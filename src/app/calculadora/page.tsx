@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { AdminSidebar } from "@/components/AdminSidebar";
 import { Mark } from "@/components/Mark";
-import { Avatar, Badge, Button, SegmentedControl, TextField } from "@/components/ui";
+import { Avatar, Badge, Button, SegmentedControl, TextField, cx } from "@/components/ui";
 import { cotizar, type Cotizacion } from "@/lib/finanzas";
 import { cop, fechaHora, pct } from "@/lib/formato";
 import { CATEGORIAS, FINANCIERAS, MARCAS, nombreDe } from "@/lib/seed";
@@ -53,17 +54,30 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
   });
   const elegida = opciones.find((o) => o.financiera.id === financieraId) ?? opciones[0];
 
+  const esAdmin = usuario.rol === "admin";
+
+  // Celular: una columna con las acciones fijas abajo. Escritorio: formulario a la
+  // izquierda y resultado a la derecha; el admin conserva la barra lateral.
+  const marco = (contenido: ReactNode) => (
+    <div className="lg:flex lg:min-h-dvh">
+      {esAdmin ? <AdminSidebar usuario={usuario} className="hidden lg:flex" /> : null}
+      <div className="mx-auto flex h-dvh w-full max-w-[480px] min-w-0 flex-col overflow-hidden lg:h-auto lg:max-w-[1040px] lg:flex-1 lg:gap-6 lg:overflow-visible lg:p-6">
+        {contenido}
+      </div>
+    </div>
+  );
+
   const ultima = tasas.reduce((max, t) => (t.actualizadoEn > max ? t.actualizadoEn : max), "");
 
   const encabezado = (
-    <header className="flex items-center justify-between px-5 pt-14 pb-3">
+    <header className="flex items-center justify-between px-5 pt-14 pb-3 lg:min-h-14 lg:px-0 lg:pt-0 lg:pb-0">
       <div className="flex flex-col gap-0.5">
         <h1 className="title-1 m-0">Calculadora</h1>
         <div className="callout text-ink-secondary">
           {ultima ? `Tasas actualizadas ${fechaHora(ultima)}` : "Sin tasas activas"}
         </div>
       </div>
-      <div className="relative flex items-center gap-3">
+      <div className={cx("relative flex items-center gap-3", esAdmin && "lg:hidden")}>
         <Mark size={28} />
         <button
           type="button"
@@ -101,8 +115,8 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
   );
 
   if (!categoria || !marca || !elegida) {
-    return (
-      <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col">
+    return marco(
+      <>
         {encabezado}
         <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 pb-24 text-center">
           <Mark size={64} className="mb-4" />
@@ -111,7 +125,7 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
             Cuando administración active una tasa, podrás cotizar aquí.
           </div>
         </div>
-      </div>
+      </>,
     );
   }
 
@@ -146,149 +160,160 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
     }
   }
 
-  return (
-    <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col overflow-hidden">
+  const tarjeta = (
+    <section className="es-card flex flex-col gap-3 p-5" aria-live="polite">
+      <div className="flex items-center justify-between">
+        <div className="es-caption-label">Cuota mensual</div>
+        <Badge tone="accent">{elegida.financiera.nombre}</Badge>
+      </div>
+      <div className="display tabular-nums">{cop(c.cuota)}</div>
+      <div className="callout text-ink-secondary">
+        {plazo} cuotas · {tasaCorta(tasa)} · inicial {cop(c.inicialValor)}
+      </div>
+      <div className="h-px bg-hairline" />
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          ["Financia", c.financia],
+          ["Intereses", c.intereses],
+          ["Total", c.total],
+        ].map(([nombre, valor]) => (
+          <div key={nombre} className="flex flex-col gap-0.5">
+            <span className="footnote text-ink-secondary">{nombre}</span>
+            <span className="data">{cop(valor as number)}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+
+  return marco(
+    <>
       {encabezado}
 
-      <main className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pt-1 pb-6">
-        <section className="flex flex-col gap-2">
-          <div className="es-caption-label">Categoría</div>
-          <SegmentedControl
-            className="flex [&>button]:flex-1"
-            label="Categoría"
-            options={categorias.map((x) => ({ value: x.id, label: x.nombre }))}
-            value={categoria.id}
-            onChange={setCategoriaId}
-          />
-        </section>
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-none lg:flex-row lg:items-start lg:gap-6">
+        <main className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pt-1 pb-6 lg:min-w-0 lg:overflow-visible lg:p-0">
+          <section className="flex flex-col gap-2">
+            <div className="es-caption-label">Categoría</div>
+            <SegmentedControl
+              className="flex [&>button]:flex-1"
+              label="Categoría"
+              options={categorias.map((x) => ({ value: x.id, label: x.nombre }))}
+              value={categoria.id}
+              onChange={setCategoriaId}
+            />
+          </section>
 
-        <section className="flex flex-col gap-2">
-          <div className="es-caption-label">Marca</div>
-          <div className="flex flex-wrap gap-2">
-            {marcas.map((m) => (
-              <Button
-                key={m.id}
-                variant={m.id === marca.id ? "tinted" : "secondary"}
-                pill
-                onClick={() => setMarcaId(m.id)}
-              >
-                {m.nombre}
-              </Button>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <div className="es-caption-label">Financiera</div>
-          <div className="flex flex-col gap-2" role="radiogroup" aria-label="Financiera">
-            {opciones.map(({ financiera, tasa: t }) => {
-              const on = financiera.id === elegida.financiera.id;
-              return (
-                <button
-                  key={financiera.id}
-                  type="button"
-                  className={on ? "fin fin--on" : "fin"}
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => setFinancieraId(financiera.id)}
+          <section className="flex flex-col gap-2">
+            <div className="es-caption-label">Marca</div>
+            <div className="flex flex-wrap gap-2">
+              {marcas.map((m) => (
+                <Button
+                  key={m.id}
+                  variant={m.id === marca.id ? "tinted" : "secondary"}
+                  pill
+                  onClick={() => setMarcaId(m.id)}
                 >
-                  <span className="radio" aria-hidden="true">
-                    <i />
-                  </span>
-                  <span className="flex flex-1 flex-col gap-0.5">
-                    <span className="headline">{financiera.nombre}</span>
-                    <span className="callout text-ink-secondary">
-                      {etiquetaTipo(t)} · plazos {t.plazos.join(", ")}
-                      {t.inicialMin ? ` · inicial mín. ${t.inicialMin} %` : ""}
+                  {m.nombre}
+                </Button>
+              ))}
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <div className="es-caption-label">Financiera</div>
+            <div className="flex flex-col gap-2" role="radiogroup" aria-label="Financiera">
+              {opciones.map(({ financiera, tasa: t }) => {
+                const on = financiera.id === elegida.financiera.id;
+                return (
+                  <button
+                    key={financiera.id}
+                    type="button"
+                    className={on ? "fin fin--on" : "fin"}
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => setFinancieraId(financiera.id)}
+                  >
+                    <span className="radio" aria-hidden="true">
+                      <i />
                     </span>
-                  </span>
-                  <span className="data tabular-nums">{pct(t.tasa)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+                    <span className="flex flex-1 flex-col gap-0.5">
+                      <span className="headline">{financiera.nombre}</span>
+                      <span className="callout text-ink-secondary">
+                        {etiquetaTipo(t)} · plazos {t.plazos.join(", ")}
+                        {t.inicialMin ? ` · inicial mín. ${t.inicialMin} %` : ""}
+                      </span>
+                    </span>
+                    <span className="data tabular-nums">{pct(t.tasa)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
-        <section className="flex flex-col gap-4">
-          <TextField
-            className="max-w-none"
-            label="Precio del producto"
-            placeholder="$ 0"
-            inputMode="numeric"
-            value={precio ? cop(precio) : ""}
-            onChange={(e) => {
-              setPrecio(Number(e.target.value.replace(/[^0-9]/g, "").slice(0, 10)));
-              setAviso("");
-            }}
-            hint="Precio de venta sin descuentos."
-          />
-          <div className="flex flex-col gap-2">
-            <div className="callout text-ink-secondary">Cuota inicial</div>
-            <SegmentedControl
-              className="flex [&>button]:flex-1"
-              label="Cuota inicial"
-              options={iniciales.map((p) => ({ value: String(p), label: `${p} %` }))}
-              value={String(inicial)}
-              onChange={(v) => setInicialSel(Number(v))}
+          <section className="flex flex-col gap-4">
+            <TextField
+              className="max-w-none"
+              label="Precio del producto"
+              placeholder="$ 0"
+              inputMode="numeric"
+              value={precio ? cop(precio) : ""}
+              onChange={(e) => {
+                setPrecio(Number(e.target.value.replace(/[^0-9]/g, "").slice(0, 10)));
+                setAviso("");
+              }}
+              hint="Precio de venta sin descuentos."
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="callout text-ink-secondary">Plazo (meses)</div>
-            <SegmentedControl
-              className="flex [&>button]:flex-1"
-              label="Plazo en meses"
-              options={tasa.plazos.map((p) => ({ value: String(p), label: String(p) }))}
-              value={String(plazo)}
-              onChange={(v) => setPlazoSel(Number(v))}
-            />
-          </div>
-        </section>
+            <div className="flex flex-col gap-2">
+              <div className="callout text-ink-secondary">Cuota inicial</div>
+              <SegmentedControl
+                className="flex [&>button]:flex-1"
+                label="Cuota inicial"
+                options={iniciales.map((p) => ({ value: String(p), label: `${p} %` }))}
+                value={String(inicial)}
+                onChange={(v) => setInicialSel(Number(v))}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="callout text-ink-secondary">Plazo (meses)</div>
+              <SegmentedControl
+                className="flex [&>button]:flex-1"
+                label="Plazo en meses"
+                options={tasa.plazos.map((p) => ({ value: String(p), label: String(p) }))}
+                value={String(plazo)}
+                onChange={(v) => setPlazoSel(Number(v))}
+              />
+            </div>
+          </section>
 
-        <section className="es-card flex flex-col gap-3 p-5" aria-live="polite">
-          <div className="flex items-center justify-between">
-            <div className="es-caption-label">Cuota mensual</div>
-            <Badge tone="accent">{elegida.financiera.nombre}</Badge>
-          </div>
-          <div className="display tabular-nums">{cop(c.cuota)}</div>
-          <div className="callout text-ink-secondary">
-            {plazo} cuotas · {tasaCorta(tasa)} · inicial {cop(c.inicialValor)}
-          </div>
-          <div className="h-px bg-hairline" />
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              ["Financia", c.financia],
-              ["Intereses", c.intereses],
-              ["Total", c.total],
-            ].map(([nombre, valor]) => (
-              <div key={nombre} className="flex flex-col gap-0.5">
-                <span className="footnote text-ink-secondary">{nombre}</span>
-                <span className="data">{cop(valor as number)}</span>
+          <div className="lg:hidden">{tarjeta}</div>
+        </main>
+
+        <aside className="flex flex-col lg:sticky lg:top-6 lg:w-[380px] lg:flex-none lg:gap-4">
+          <div className="hidden lg:block">{tarjeta}</div>
+          <footer className="flex flex-col gap-2 border-t border-hairline bg-surface px-5 pt-3 pb-8 lg:flex-col-reverse lg:border-0 lg:p-0">
+            {aviso ? (
+              <div className="callout text-center text-ink-secondary" role="status">
+                {aviso}
               </div>
-            ))}
-          </div>
-        </section>
-      </main>
-
-      <footer className="flex flex-col gap-2 border-t border-hairline bg-surface px-5 pt-3 pb-8">
-        {aviso ? (
-          <div className="callout text-center text-ink-secondary" role="status">
-            {aviso}
-          </div>
-        ) : null}
-        <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            size="lg"
-            icon="chat"
-            label="Enviar por WhatsApp"
-            disabled={!precio}
-            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener")}
-          />
-          <Button size="lg" pill className="flex-1" disabled={!precio} onClick={compartir}>
-            Compartir cotización
-          </Button>
-        </div>
-      </footer>
-    </div>
+            ) : null}
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                size="lg"
+                icon="chat"
+                label="Enviar por WhatsApp"
+                disabled={!precio}
+                onClick={() =>
+                  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener")
+                }
+              />
+              <Button size="lg" pill className="flex-1" disabled={!precio} onClick={compartir}>
+                Compartir cotización
+              </Button>
+            </div>
+          </footer>
+        </aside>
+      </div>
+    </>,
   );
 }
