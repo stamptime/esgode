@@ -29,6 +29,10 @@ export default function CategoriasPage() {
         { key: "productos", label: "Productos", align: "right", mono: true, render: (c) => de(productos, c) },
         { key: "tasas", label: "Tasas", align: "right", mono: true, render: (c) => de(tasas, c) },
       ]}
+      tarjeta={(c) => ({
+        titulo: c.nombre,
+        detalle: `${cuenta(de(marcas, c), "marca", "marcas")} · ${cuenta(de(tasas, c), "tasa", "tasas")}`,
+      })}
       filas={categorias}
       textoDe={(c) => c.nombre}
       nombreDe={(c) => c.nombre}

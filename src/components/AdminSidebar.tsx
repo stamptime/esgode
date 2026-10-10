@@ -33,7 +33,16 @@ const NAV: SidebarItem[] = [
   { id: "usuarios", label: "Usuarios y roles", icon: "person", disabled: true },
 ];
 
-export function AdminSidebar({ usuario, className }: { usuario: Usuario; className?: string }) {
+export function AdminSidebar({
+  usuario,
+  className,
+  onNavegar,
+}: {
+  usuario: Usuario;
+  className?: string;
+  /** Se llama al elegir una sección, p. ej. para cerrar el cajón en celular. */
+  onNavegar?: () => void;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const activo = Object.keys(RUTAS).find((id) => pathname.startsWith(RUTAS[id]));
@@ -42,7 +51,11 @@ export function AdminSidebar({ usuario, className }: { usuario: Usuario; classNa
       className={cx("sticky top-0 h-dvh flex-none", className)}
       items={NAV}
       activeId={activo}
-      onSelect={(id) => RUTAS[id] && router.push(RUTAS[id])}
+      onSelect={(id) => {
+        if (!RUTAS[id]) return;
+        onNavegar?.();
+        router.push(RUTAS[id]);
+      }}
       brand="esgode"
       logo={<Mark size={24} />}
       user={{ name: usuario.nombre, role: "Administrador" }}

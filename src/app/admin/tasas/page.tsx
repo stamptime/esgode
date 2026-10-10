@@ -15,6 +15,7 @@ import { esHoy, fecha, hora, pct } from "@/lib/formato";
 import { nombreDe } from "@/lib/formato";
 import { useStore } from "@/lib/store";
 import type { Tasa } from "@/lib/types";
+import { ListaMovil } from "@/components/admin/movil";
 import { Inspector } from "./Inspector";
 
 type Fila = Tasa & { marca: string; financiera: string };
@@ -89,7 +90,7 @@ export default function TasasPage() {
 
   return (
     <>
-      <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-6 p-6">
+      <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-4 p-4 lg:gap-6 lg:p-6">
         <header className="flex min-h-14 flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <h1 className="title-1 m-0">Tasas de crédito</h1>
@@ -99,7 +100,7 @@ export default function TasasPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <TextField
-              className="w-60"
+              className="w-full sm:w-60"
               placeholder="Buscar marca o financiera"
               leading="search"
               value={busqueda}
@@ -125,7 +126,7 @@ export default function TasasPage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="hidden grid-cols-3 gap-4 lg:grid">
           <StatCard
             label="Tasas activas"
             value={String(enCategoria.filter((t) => t.activa).length)}
@@ -149,7 +150,7 @@ export default function TasasPage() {
 
         <div>
           <DataTable
-            className="overflow-x-auto"
+            className="hidden overflow-x-auto lg:block"
             columns={COLUMNAS}
             rows={filas}
             rowKey="id"
@@ -159,6 +160,28 @@ export default function TasasPage() {
               setCreando(false);
             }}
             emptyText={
+              q
+                ? "Ninguna tasa coincide con la búsqueda. Prueba con otra marca o financiera."
+                : "No hay tasas en esta categoría. Crea la primera con «Nueva tasa»."
+            }
+          />
+          <ListaMovil
+            filas={filas}
+            tarjeta={(f) => ({
+              titulo: `${f.marca} · ${f.financiera}`,
+              detalle: `${f.tipo === "mensual" ? "Mensual" : "Efectiva anual"} · plazos ${f.plazos.join(", ")}`,
+              lado: (
+                <>
+                  <span className="data">{pct(f.tasa)}</span>
+                  {f.activa ? null : <Badge>Inactiva</Badge>}
+                </>
+              ),
+            })}
+            onElegir={(f) => {
+              setSelId(f.id);
+              setCreando(false);
+            }}
+            vacio={
               q
                 ? "Ninguna tasa coincide con la búsqueda. Prueba con otra marca o financiera."
                 : "No hay tasas en esta categoría. Crea la primera con «Nueva tasa»."
@@ -179,6 +202,7 @@ export default function TasasPage() {
             setBusqueda("");
             setSelId(id);
           }}
+          abierto
           onCerrar={() => setCreando(false)}
         />
       ) : sel ? (
@@ -189,6 +213,8 @@ export default function TasasPage() {
           financieras={financieras}
           existentes={enCategoria}
           tasa={sel}
+          // En celular solo se abre al tocar una tasa.
+          abierto={sel.id === selId}
           onCerrar={() => setSelId(null)}
         />
       ) : null}

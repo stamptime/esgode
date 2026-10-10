@@ -33,6 +33,10 @@ export default function MarcasPage() {
         { key: "productos", label: "Productos", align: "right", mono: true, render: (m) => de(productos, m) },
         { key: "tasas", label: "Tasas", align: "right", mono: true, render: (m) => de(tasas, m) },
       ]}
+      tarjeta={(m) => ({
+        titulo: m.nombre,
+        detalle: `${nombreDe(categorias, m.categoriaId)} · ${cuenta(de(tasas, m), "tasa", "tasas")}`,
+      })}
       filas={marcas}
       textoDe={(m) => `${m.nombre} ${nombreDe(categorias, m.categoriaId)}`}
       nombreDe={(m) => `${m.nombre} · ${nombreDe(categorias, m.categoriaId)}`}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { Button, DataTable, TextField, Toggle, type DataColumn } from "@/components/ui";
 import { cop } from "@/lib/formato";
+import { ListaMovil, VolverALista, claseInspector, type Tarjeta } from "./movil";
 
 // Pantalla de lista + inspector para los catálogos del admin (categorías,
 // marcas, financieras, productos). Misma estructura que Tasas.
@@ -35,6 +36,8 @@ export interface CatalogoProps<Fila extends { id: string }> {
     vacio: string; // lista sin filas
   };
   columnas: DataColumn<Fila>[];
+  /** Cómo se ve cada registro en la lista de celular. */
+  tarjeta: (fila: Fila) => Tarjeta;
   filas: Fila[];
   /** Texto de la fila contra el que se busca. */
   textoDe: (fila: Fila) => string;
@@ -66,15 +69,15 @@ export function Catalogo<Fila extends { id: string }>(props: CatalogoProps<Fila>
 
   return (
     <>
-      <main className="flex min-w-0 flex-[999_1_480px] flex-col gap-6 p-6">
+      <main className="flex min-w-0 flex-[999_1_480px] flex-col gap-4 p-4 lg:gap-6 lg:p-6">
         <header className="flex min-h-14 flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <h1 className="title-1 m-0">{props.titulo}</h1>
             <div className="callout text-ink-secondary">{props.subtitulo}</div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <TextField
-              className="w-60"
+              className="w-full sm:w-60"
               placeholder={props.textos.buscar}
               leading="search"
               value={busqueda}
@@ -89,7 +92,7 @@ export function Catalogo<Fila extends { id: string }>(props: CatalogoProps<Fila>
         {props.bloqueo ? <div className="callout text-ink-secondary">{props.bloqueo}</div> : null}
 
         <DataTable
-          className="overflow-x-auto"
+          className="hidden overflow-x-auto lg:block"
           columns={props.columnas}
           rows={filas}
           rowKey="id"
@@ -100,6 +103,15 @@ export function Catalogo<Fila extends { id: string }>(props: CatalogoProps<Fila>
           }}
           emptyText={q ? "Nada coincide con la búsqueda. Prueba con otro nombre." : props.textos.vacio}
         />
+        <ListaMovil
+          filas={filas}
+          tarjeta={props.tarjeta}
+          onElegir={(f) => {
+            setSelId(f.id);
+            setCreando(false);
+          }}
+          vacio={q ? "Nada coincide con la búsqueda. Prueba con otro nombre." : props.textos.vacio}
+        />
       </main>
 
       {creando || sel ? (
@@ -108,6 +120,8 @@ export function Catalogo<Fila extends { id: string }>(props: CatalogoProps<Fila>
           key={sel ? `${sel.id}:${JSON.stringify(props.valoresDe(sel))}` : "nuevo"}
           {...props}
           actual={sel}
+          // En celular solo se abre al tocar un registro o crear uno.
+          abierto={creando || sel?.id === selId}
           onCreado={(id) => {
             setCreando(false);
             setBusqueda("");
@@ -124,7 +138,12 @@ export function Catalogo<Fila extends { id: string }>(props: CatalogoProps<Fila>
 }
 
 function Formulario<Fila extends { id: string }>(
-  props: CatalogoProps<Fila> & { actual: Fila | null; onCreado: (id: string) => void; onCerrar: () => void },
+  props: CatalogoProps<Fila> & {
+    actual: Fila | null;
+    abierto: boolean;
+    onCreado: (id: string) => void;
+    onCerrar: () => void;
+  },
 ) {
   const { actual, campos, textos } = props;
   const [original] = useState(() => props.valoresDe(actual));
@@ -165,9 +184,10 @@ function Formulario<Fila extends { id: string }>(
 
   return (
     <aside
-      className="flex w-full min-w-0 flex-col gap-5 rounded-l-xl border-l border-hairline bg-surface-raised p-6 lg:w-[360px] lg:flex-none"
+      className={claseInspector(props.abierto)}
       aria-label={actual ? props.nombreDe(actual) : textos.nuevo}
     >
+      <VolverALista onClick={props.onCerrar} />
       <div className="flex flex-col gap-1">
         <div className="es-caption-label">{props.titulo}</div>
         <h2 className="title-2 m-0">{actual ? props.nombreDe(actual) : textos.nuevo}</h2>

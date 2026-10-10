@@ -10,7 +10,7 @@ export function Mark({ size, className }: { size: number; className?: string }) 
   );
 }
 
-/** Lockup "es·ode" con la marca como g y, debajo, "tech store". */
+/** Lockup "es·de": la marca hace de g y de o. Debajo, "tech store". */
 export function Lockup() {
   return (
     <div className="flex flex-col gap-0.5">
@@ -21,7 +21,7 @@ export function Lockup() {
       >
         <span>es</span>
         <Mark size={54} className="mx-0.5 translate-y-3 self-center" />
-        <span>ode</span>
+        <span>de</span>
       </div>
       <div className="tagline text-ink-secondary">tech store</div>
     </div>

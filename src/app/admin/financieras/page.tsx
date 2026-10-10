@@ -33,6 +33,7 @@ export default function FinancierasPage() {
           render: (f) => de(f).filter((t) => t.activa).length,
         },
       ]}
+      tarjeta={(f) => ({ titulo: f.nombre, detalle: cuenta(de(f).length, "tasa", "tasas") })}
       filas={financieras}
       textoDe={(f) => f.nombre}
       nombreDe={(f) => f.nombre}

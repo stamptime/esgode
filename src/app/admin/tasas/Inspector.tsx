@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ConfirmSheet } from "@/components/ConfirmSheet";
+import { VolverALista, claseInspector } from "@/components/admin/movil";
 import { Badge, Button, SegmentedControl, TextField, Toggle } from "@/components/ui";
 import { cotizar, tasaEfectivaAnual, tasaMensual } from "@/lib/finanzas";
 import { cop, decimalATexto, fecha, hora, pct, textoADecimal } from "@/lib/formato";
@@ -32,6 +33,8 @@ interface InspectorProps {
   /** Sin `tasa`, el inspector crea una nueva. */
   tasa?: Tasa;
   onCreada?: (id: string) => void;
+  /** En celular el inspector es una hoja a pantalla completa; aquí, si está abierta. */
+  abierto: boolean;
   onCerrar: () => void;
 }
 
@@ -42,6 +45,7 @@ export function Inspector({
   existentes,
   tasa,
   onCreada,
+  abierto,
   onCerrar,
 }: InspectorProps) {
   const ocupada = (marcaId: string, financieraId: string) =>
@@ -135,9 +139,10 @@ export function Inspector({
 
   return (
     <aside
-      className="flex w-full min-w-0 lg:w-[360px] lg:flex-none flex-col gap-5 rounded-l-xl border-l border-hairline bg-surface-raised p-6"
+      className={claseInspector(abierto)}
       aria-label={tasa ? `Tasa de ${marca} con ${financiera}` : "Nueva tasa"}
     >
+      <VolverALista onClick={onCerrar} />
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <div className="es-caption-label">

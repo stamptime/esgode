@@ -38,6 +38,16 @@ export default function ProductosPage() {
           ),
         },
       ]}
+      tarjeta={(p) => ({
+        titulo: p.nombre,
+        detalle: `${nombreDe(marcas, p.marcaId)} · ${nombreDe(categorias, p.categoriaId)}`,
+        lado: (
+          <>
+            <span className="data">{cop(p.precio)}</span>
+            {p.activo ? null : <Badge>Inactivo</Badge>}
+          </>
+        ),
+      })}
       filas={productos}
       textoDe={(p) => `${p.nombre} ${nombreDe(marcas, p.marcaId)} ${nombreDe(categorias, p.categoriaId)}`}
       nombreDe={(p) => p.nombre}
