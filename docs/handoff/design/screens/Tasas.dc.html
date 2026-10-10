@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tasas de crédito — Esgode CRM (admin)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/esgode/tokens.css">
+<link rel="stylesheet" href="ds/esgode/components/bundle.css">
+<script src="ds/esgode/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--accent-text)}
+.chip{height:32px;padding:0 14px;border-radius:980px;border:1px solid var(--border-control);background:var(--surface-raised);font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.chip--on{background:var(--surface-selected);border-color:var(--accent);color:var(--accent-text)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</helmet>
+<div class="es-root" data-theme="{{ theme }}" style="min-height: 844px; box-sizing: border-box; background: var(--surface); color: var(--ink); font-family: var(--font-sans); display: flex; flex-wrap: wrap;">
+
+  <x-import component-from-global-scope="Esgode.SidebarNav" items="{{ nav }}" active-id="tasas" user="{{ user }}" logo="{{ logoSrc }}" brand="esgode" style="flex: 0 0 240px; display: flex; min-height: 844px;"></x-import>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-wrap: wrap;">
+
+    <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+
+      <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <h1 style="margin: 0; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.3px;">Tasas de crédito</h1>
+          <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Lo que definas aquí es lo que el staff ve en la calculadora.</div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          <x-import component-from-global-scope="Esgode.TextField" placeholder="Buscar marca o financiera" leading="search" style="width: 240px;"></x-import>
+          <x-import component-from-global-scope="Esgode.SegmentedControl" label="Categoría" options="{{ categorias }}" value="{{ categoria }}" on-change="{{ setCategoria }}"></x-import>
+          <x-import component-from-global-scope="Esgode.Button" variant="primary" icon="plus">Nueva tasa</x-import>
+        </div>
+      </header>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+        <x-import component-from-global-scope="Esgode.StatCard" label="Tasas activas" value="{{ nActivas }}" hint="{{ categoriaTxt }}"></x-import>
+        <x-import component-from-global-scope="Esgode.StatCard" label="Financieras" value="3" hint="Crédito Fácil · PagoFlex · FinanCasanare"></x-import>
+        <x-import component-from-global-scope="Esgode.StatCard" label="Última actualización" value="08:14" hint="hoy, por Jesús"></x-import>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <x-import component-from-global-scope="Esgode.DataTable" columns="{{ columnas }}" rows="{{ filas }}" row-key="key" selected-key="{{ selKey }}" on-row-click="{{ pickRow }}" empty-text="No hay tasas en esta categoría. Crea la primera con «Nueva tasa»."></x-import>
+      </div>
+
+    </main>
+
+    <aside style="flex: 1 1 360px; max-width: 400px; min-width: 0; box-sizing: border-box; background: var(--surface-raised); border-left: 1px solid var(--hairline); border-radius: 20px 0 0 20px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary);">{{ sel.categoria }} · {{ sel.marca }}</div>
+          <h2 style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.2px;">{{ sel.financiera }}</h2>
+        </div>
+        <x-import component-from-global-scope="Esgode.Badge" tone="{{ sel.tone }}">{{ sel.estado }}</x-import>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Tipo de tasa</div>
+        <x-import component-from-global-scope="Esgode.SegmentedControl" label="Tipo de tasa" options="{{ tipos }}" value="{{ tipo }}" on-change="{{ setTipo }}" style="display: flex;"></x-import>
+      </div>
+
+      <x-import component-from-global-scope="Esgode.TextField" label="{{ tasaLabel }}" value="{{ tasaTxt }}" on-change="{{ setTasa }}" type="text" hint="{{ tasaHint }}" outlined="{{ yes }}" style="max-width: none;"></x-import>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Plazos permitidos (meses)</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <sc-for list="{{ plazoChips }}" as="p" hint-placeholder-count="6">
+            <button type="button" class="{{ p.cls }}" aria-pressed="{{ p.on }}" onClick="{{ p.toggle }}">{{ p.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <x-import component-from-global-scope="Esgode.TextField" label="Cuota inicial mínima (%)" default-value="10" type="text" hint="0 si la financiera no la exige." outlined="{{ yes }}" style="max-width: none;"></x-import>
+
+      <x-import component-from-global-scope="Esgode.Toggle" label="Tasa activa en la calculadora" checked="{{ activa }}" on-change="{{ setActiva }}"></x-import>
+
+      <div style="height: 1px; background: var(--hairline);"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 18px; color: var(--ink-secondary);">
+        <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase;">Vista previa · {{ previewTitulo }}</div>
+        <div style="display: flex; justify-content: space-between; color: var(--ink);"><span>Cuota mensual a 12 meses</span><span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums;">{{ previewCuota }}</span></div>
+        <div style="display: flex; justify-content: space-between;"><span>Intereses totales</span><span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums;">{{ previewInteres }}</span></div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; gap: 12px;">
+          <x-import component-from-global-scope="Esgode.Button" variant="secondary" style="flex: 1; display: flex;">Descartar</x-import>
+          <x-import component-from-global-scope="Esgode.Button" variant="primary" icon="check" style="flex: 1; display: flex;">Guardar tasa</x-import>
+        </div>
+        <x-import component-from-global-scope="Esgode.Button" variant="danger" size="sm">Eliminar tasa</x-import>
+      </div>
+    </aside>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":1280,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.data = [
+      { key: 'cel-samsung-cf', categoria: 'Celulares', marca: 'Samsung', financiera: 'Crédito Fácil', tipo: 'mensual', tasa: 2.1, plazos: [6, 12, 18, 24], inicial: 10, activa: true },
+      { key: 'cel-samsung-pf', categoria: 'Celulares', marca: 'Samsung', financiera: 'PagoFlex', tipo: 'mensual', tasa: 1.8, plazos: [12, 24, 36], inicial: 20, activa: true },
+      { key: 'cel-samsung-fc', categoria: 'Celulares', marca: 'Samsung', financiera: 'FinanCasanare', tipo: 'mensual', tasa: 2.4, plazos: [6, 12], inicial: 0, activa: true },
+      { key: 'cel-apple-cf', categoria: 'Celulares', marca: 'Apple', financiera: 'Crédito Fácil', tipo: 'mensual', tasa: 1.9, plazos: [12, 18, 24], inicial: 20, activa: true },
+      { key: 'cel-apple-pf', categoria: 'Celulares', marca: 'Apple', financiera: 'PagoFlex', tipo: 'mensual', tasa: 1.7, plazos: [12, 24, 36], inicial: 30, activa: true },
+      { key: 'cel-xiaomi-cf', categoria: 'Celulares', marca: 'Xiaomi', financiera: 'Crédito Fácil', tipo: 'mensual', tasa: 2.3, plazos: [6, 12, 18], inicial: 10, activa: true },
+      { key: 'cel-xiaomi-fc', categoria: 'Celulares', marca: 'Xiaomi', financiera: 'FinanCasanare', tipo: 'mensual', tasa: 2.6, plazos: [6, 12], inicial: 0, activa: true },
+      { key: 'cel-moto-fc', categoria: 'Celulares', marca: 'Motorola', financiera: 'FinanCasanare', tipo: 'mensual', tasa: 2.5, plazos: [6, 12], inicial: 0, activa: false },
+      { key: 'tab-samsung-cf', categoria: 'Tablets', marca: 'Samsung', financiera: 'Crédito Fácil', tipo: 'mensual', tasa: 2.0, plazos: [6, 12, 18, 24], inicial: 10, activa: true },
+      { key: 'tab-samsung-pf', categoria: 'Tablets', marca: 'Samsung', financiera: 'PagoFlex', tipo: 'mensual', tasa: 1.8, plazos: [12, 24], inicial: 20, activa: true },
+      { key: 'tab-apple-cf', categoria: 'Tablets', marca: 'Apple', financiera: 'Crédito Fácil', tipo: 'mensual', tasa: 1.9, plazos: [12, 18, 24], inicial: 20, activa: true },
+      { key: 'tab-lenovo-fc', categoria: 'Tablets', marca: 'Lenovo', financiera: 'FinanCasanare', tipo: 'mensual', tasa: 2.4, plazos: [6, 12], inicial: 0, activa: true }
+    ];
+    this.state = { categoria: 'Celulares', selKey: 'cel-samsung-cf', edits: {} };
+  }
+  cop(n) { return '$ ' + Math.round(n).toLocaleString('es-CO').replace(/,/g, '.'); }
+  pct(n) { return n.toFixed(1).replace('.', ',') + ' %'; }
+  renderVals() {
+    const React = window.React, h = React.createElement, E = window.Esgode;
+    const s = this.state;
+    const filas = this.data.filter(r => r.categoria === s.categoria);
+    const selRow = this.data.find(r => r.key === s.selKey) || filas[0];
+    const ed = Object.assign({ tipo: selRow.tipo, tasa: selRow.tasa, plazos: selRow.plazos.slice(), activa: selRow.activa }, s.edits[selRow.key] || {});
+    const setEdit = (patch) => this.setState({ edits: Object.assign({}, s.edits, { [selRow.key]: Object.assign({}, ed, patch) }) });
+    const mensual = ed.tipo === 'mensual' ? ed.tasa / 100 : Math.pow(1 + ed.tasa / 100, 1 / 12) - 1;
+    const precio = 1899900, financia = precio * (1 - selRow.inicial / 100), n = 12;
+    const cuota = financia * mensual / (1 - Math.pow(1 + mensual, -n));
+    const badge = (r) => h(E.Badge, { tone: r.activa ? 'success' : 'neutral' }, r.activa ? 'Activa' : 'Inactiva');
+    return {
+      yes: true,
+      theme: this.props.theme ?? 'light',
+      logoSrc: (this.props.theme ?? 'light') === 'dark' ? '/_blob/b9b74230094a72b1b0ab031cad78c8dc' : '/_blob/6083dc97c87dc300922b3bc9e33cdf22',
+      user: { name: 'Jesús Vallecilla', role: 'Administrador' },
+      nav: [
+        { id: 'inicio', label: 'Inicio', icon: 'home' },
+        { id: 'clientes', label: 'Clientes', icon: 'person', count: 248 },
+        { id: 'pedidos', label: 'Pedidos', icon: 'cart', count: 23 },
+        { id: 'conversaciones', label: 'Conversaciones', icon: 'chat', count: 5 },
+        { id: 'productos', label: 'Productos', icon: 'box' },
+        { section: 'Crédito' },
+        { id: 'tasas', label: 'Tasas', icon: 'chart' },
+        { id: 'calc', label: 'Calculadora', icon: 'plus' },
+        { section: 'Equipo' },
+        { id: 'usuarios', label: 'Usuarios y roles', icon: 'person' }
+      ],
+      categorias: [{ value: 'Celulares', label: 'Celulares', count: 8 }, { value: 'Tablets', label: 'Tablets', count: 4 }],
+      categoria: s.categoria,
+      categoriaTxt: 'en ' + s.categoria.toLowerCase(),
+      setCategoria: (v) => { const first = this.data.find(r => r.categoria === v); this.setState({ categoria: v, selKey: first ? first.key : s.selKey }); },
+      nActivas: String(filas.filter(r => r.activa).length),
+      columnas: [
+        { key: 'marca', label: 'Marca', width: 140 },
+        { key: 'financiera', label: 'Financiera' },
+        { key: 'tipo', label: 'Tipo de tasa', render: (r) => r.tipo === 'mensual' ? 'Mensual' : 'Efectiva anual' },
+        { key: 'tasa', label: 'Tasa', align: 'right', mono: true, render: (r) => this.pct(r.tasa) },
+        { key: 'plazos', label: 'Plazos', mono: true, render: (r) => r.plazos.join(' · ') },
+        { key: 'inicial', label: 'Inicial mín.', align: 'right', mono: true, render: (r) => r.inicial + ' %' },
+        { key: 'activa', label: 'Estado', render: badge }
+      ],
+      filas: filas,
+      selKey: selRow.key,
+      pickRow: (r) => this.setState({ selKey: r.key }),
+      sel: { categoria: selRow.categoria, marca: selRow.marca, financiera: selRow.financiera, estado: ed.activa ? 'Activa' : 'Inactiva', tone: ed.activa ? 'success' : 'neutral' },
+      tipos: [{ value: 'mensual', label: 'Mensual' }, { value: 'ea', label: 'Efectiva anual' }],
+      tipo: ed.tipo,
+      setTipo: (v) => setEdit({ tipo: v }),
+      tasaLabel: ed.tipo === 'mensual' ? 'Tasa mensual (%)' : 'Tasa efectiva anual (%)',
+      tasaTxt: String(ed.tasa).replace('.', ','),
+      tasaHint: ed.tipo === 'mensual' ? 'Equivale a ' + this.pct((Math.pow(1 + ed.tasa / 100, 12) - 1) * 100) + ' efectiva anual.' : 'Equivale a ' + this.pct(mensual * 100) + ' mensual.',
+      setTasa: (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); setEdit({ tasa: isNaN(v) ? 0 : v }); },
+      plazoChips: [3, 6, 9, 12, 18, 24, 36].map(p => {
+        const on = ed.plazos.indexOf(p) >= 0;
+        return { label: String(p), on: on ? 'true' : 'false', cls: 'chip' + (on ? ' chip--on' : ''),
+          toggle: () => setEdit({ plazos: on ? ed.plazos.filter(x => x !== p) : ed.plazos.concat([p]).sort((a, b) => a - b) }) };
+      }),
+      activa: ed.activa,
+      setActiva: (v) => setEdit({ activa: v }),
+      previewTitulo: selRow.marca + ' a ' + this.cop(precio),
+      previewCuota: this.cop(cuota),
+      previewInteres: this.cop(cuota * n - financia)
+    };
+  }
+}
+</script>
+</body>
+</html>

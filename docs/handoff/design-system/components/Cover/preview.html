@@ -1,0 +1,55 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); width: 960px; height: 288px; overflow: hidden; position: relative; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  svg { position: absolute; inset: 0; }
+  .accent { fill: var(--accent); }
+  .ink { fill: var(--ink); }
+  .tint { fill: var(--surface-selected); }
+  .raised { fill: var(--surface-raised); }
+  .sunken { fill: var(--surface-sunken); }
+  .warn { fill: var(--warning); }
+  .slab { rx: 20px; }
+  .pill { rx: 20px; }
+  .pill-sm { rx: 16px; }
+  .name { position: absolute; left: 48px; bottom: 62px; width: 440px; font-family: var(--font-display); font-size: 72px; line-height: 0.92; font-weight: 700; letter-spacing: -0.4px; color: var(--ink); margin: 0; }
+  .tag { position: absolute; left: 48px; bottom: 40px; width: 440px; font-size: 13px; line-height: 18px; color: var(--ink-secondary); margin: 0; }
+</style>
+</head>
+<body>
+<!--
+  blocks: accent 240×240 (space-12×5) rx radius-xl · ink 224×112 bleeding right rx radius-xl · surface-selected 224×112 rx radius-xl · warning pill 96×32 (small: a state colour)
+  arrangement: one tall accent slab with two satellites stacked to its right, the top one bleeding off the right edge — the window + inspector shell
+  pattern: soft, large radii → pills and discs from the radius scale (Apple's toggle and pill CTA); chosen because every control in this system is a pill or a 10–20px rounded slab
+  scales: x from 512 (space-6 clear of the name zone at 480); gaps space-4 (16) and space-6 (24); pills 144×40 and 96×32 with rx = half the short side; discs 28px
+-->
+<svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+  <rect class="accent slab" x="512" y="24" width="240" height="240"/>
+  <rect class="ink slab" x="768" y="24" width="224" height="112"/>
+  <rect class="tint slab" x="768" y="152" width="224" height="112"/>
+
+  <!-- toggles on the accent slab -->
+  <rect class="raised pill" x="536" y="48" width="144" height="40"/>
+  <circle class="accent" cx="658" cy="68" r="14"/>
+  <rect class="raised pill" x="536" y="104" width="144" height="40"/>
+  <circle class="ink" cx="558" cy="124" r="14"/>
+  <rect class="raised pill" x="536" y="160" width="144" height="40"/>
+  <circle class="accent" cx="658" cy="180" r="14"/>
+  <circle class="raised" cx="712" cy="236" r="14"/>
+
+  <!-- segmented pill on the ink slab -->
+  <rect class="sunken pill-sm" x="792" y="64" width="96" height="32"/>
+  <circle class="ink" cx="816" cy="80" r="10"/>
+  <!-- call-to-action pill on the tint slab -->
+  <rect class="accent pill" x="792" y="188" width="144" height="40"/>
+  <rect class="warn pill-sm" x="904" y="64" width="64" height="32"/>
+</svg>
+<h1 class="name">Esgode CRM</h1>
+<p class="tag">Apple-inspired back-office for the Esgode store.</p>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!-- @dsCard group="Inputs" height=140 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    var [a, setA] = React.useState(true);
+    var [b, setB] = React.useState(false);
+    return h('div', { className: 'col', style: { gap: '12px' } },
+      h(E.Toggle, { checked: a, onChange: setA, label: 'Notificar al cliente por WhatsApp' }),
+      h(E.Toggle, { checked: b, onChange: setB, label: 'Marcar como cliente frecuente' }),
+      h(E.Toggle, { checked: true, disabled: true, label: 'Sincronizar con Instagram' }));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

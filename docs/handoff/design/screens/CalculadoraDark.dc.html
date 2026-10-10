@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Calculadora — modo oscuro</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/esgode/tokens.css">
+<link rel="stylesheet" href="ds/esgode/components/bundle.css">
+<script src="ds/esgode/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px;">
+<dc-import name="Calculadora" theme="dark" hint-size="390px,844px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

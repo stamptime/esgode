@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Calculadora de crédito — Esgode CRM</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/esgode/tokens.css">
+<link rel="stylesheet" href="ds/esgode/components/bundle.css">
+<script src="ds/esgode/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--accent-text)}
+.fin{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:var(--radius-lg);border:1px solid var(--hairline);background:var(--surface-raised);font-family:var(--font-sans);color:var(--ink);cursor:pointer}
+.fin:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fin--on{background:var(--surface-selected);border-color:var(--accent)}
+.radio{width:20px;height:20px;border-radius:980px;border:1.5px solid var(--border-control);flex:none;display:flex;align-items:center;justify-content:center}
+.fin--on .radio{border-color:var(--accent);background:var(--accent)}
+.radio i{width:8px;height:8px;border-radius:980px;background:var(--on-accent);display:none}
+.fin--on .radio i{display:block}
+</style>
+</helmet>
+<div class="es-root" data-theme="{{ theme }}" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--surface); color: var(--ink); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 56px 20px 12px;">
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <h1 style="margin: 0; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.3px;">Calculadora</h1>
+      <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Tasas actualizadas hoy, 08:14</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img src="{{ logoSrc }}" alt="Esgode" style="width: 28px; height: 28px;">
+      <x-import component-from-global-scope="Esgode.Avatar" name="Camila Rojas" size="lg"></x-import>
+    </div>
+  </header>
+
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px 120px; display: flex; flex-direction: column; gap: 20px;">
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary);">Categoría</div>
+      <x-import component-from-global-scope="Esgode.SegmentedControl" label="Categoría" options="{{ categorias }}" value="{{ categoria }}" on-change="{{ setCategoria }}" style="display: flex;"></x-import>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary);">Marca</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{ marcas }}" as="m" hint-placeholder-count="4">
+          <x-import component-from-global-scope="Esgode.Button" variant="{{ m.variant }}" size="md" pill="{{ yes }}" on-click="{{ m.pick }}">{{ m.nombre }}</x-import>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary);">Financiera</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;" role="radiogroup" aria-label="Financiera">
+        <sc-for list="{{ financieras }}" as="f" hint-placeholder-count="3">
+          <button type="button" class="{{ f.cls }}" role="radio" aria-checked="{{ f.on }}" onClick="{{ f.pick }}">
+            <span class="radio" aria-hidden="true"><i></i></span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: 15px; line-height: 20px; font-weight: 600;">{{ f.nombre }}</span>
+              <span style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">{{ f.detalle }}</span>
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 13px; line-height: 18px; font-variant-numeric: tabular-nums;">{{ f.tasaTxt }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <x-import component-from-global-scope="Esgode.TextField" label="Precio del producto" placeholder="$ 0" value="{{ precioTxt }}" on-change="{{ setPrecio }}" type="text" hint="Precio de venta sin descuentos." style="max-width: none;"></x-import>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Cuota inicial</div>
+        <x-import component-from-global-scope="Esgode.SegmentedControl" label="Cuota inicial" options="{{ iniciales }}" value="{{ inicial }}" on-change="{{ setInicial }}" style="display: flex;"></x-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">Plazo (meses)</div>
+        <x-import component-from-global-scope="Esgode.SegmentedControl" label="Plazo en meses" options="{{ plazos }}" value="{{ plazo }}" on-change="{{ setPlazo }}" style="display: flex;"></x-import>
+      </div>
+    </section>
+
+    <section class="es-card" style="display: flex; flex-direction: column; gap: 12px; padding: 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary);">Cuota mensual</div>
+        <x-import component-from-global-scope="Esgode.Badge" tone="accent">{{ finSel }}</x-import>
+      </div>
+      <div style="font-size: 40px; line-height: 44px; font-weight: 700; letter-spacing: -0.4px; font-variant-numeric: tabular-nums;">{{ cuotaTxt }}</div>
+      <div style="font-size: 13px; line-height: 18px; color: var(--ink-secondary);">{{ resumen }}</div>
+      <div style="height: 1px; background: var(--hairline);"></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12px; line-height: 16px; color: var(--ink-secondary);">Financia</span>
+          <span style="font-family: var(--font-mono); font-size: 13px; line-height: 18px;">{{ financiaTxt }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12px; line-height: 16px; color: var(--ink-secondary);">Intereses</span>
+          <span style="font-family: var(--font-mono); font-size: 13px; line-height: 18px;">{{ interesTxt }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12px; line-height: 16px; color: var(--ink-secondary);">Total</span>
+          <span style="font-family: var(--font-mono); font-size: 13px; line-height: 18px;">{{ totalTxt }}</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 32px; background: var(--surface); border-top: 1px solid var(--hairline); display: flex; gap: 12px;">
+    <x-import component-from-global-scope="Esgode.Button" variant="secondary" size="lg" icon="chat" label="Enviar por WhatsApp"></x-import>
+    <x-import component-from-global-scope="Esgode.Button" variant="primary" size="lg" pill="{{ yes }}" style="flex: 1; display: flex;">Compartir cotización</x-import>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Tasas definidas por el admin (ver artboard Tasas): categoría › marca › financiera.
+    this.tasas = {
+      Celulares: {
+        Samsung: [
+          { id: 'cf', nombre: 'Crédito Fácil', tipo: 'Tasa mensual', tasa: 2.1, plazos: [6, 12, 18, 24], inicialMin: 10 },
+          { id: 'pf', nombre: 'PagoFlex', tipo: 'Tasa mensual', tasa: 1.8, plazos: [12, 24, 36], inicialMin: 20 },
+          { id: 'fc', nombre: 'FinanCasanare', tipo: 'Tasa mensual', tasa: 2.4, plazos: [6, 12], inicialMin: 0 }
+        ],
+        Apple: [
+          { id: 'cf', nombre: 'Crédito Fácil', tipo: 'Tasa mensual', tasa: 1.9, plazos: [12, 18, 24], inicialMin: 20 },
+          { id: 'pf', nombre: 'PagoFlex', tipo: 'Tasa mensual', tasa: 1.7, plazos: [12, 24, 36], inicialMin: 30 }
+        ],
+        Xiaomi: [
+          { id: 'cf', nombre: 'Crédito Fácil', tipo: 'Tasa mensual', tasa: 2.3, plazos: [6, 12, 18], inicialMin: 10 },
+          { id: 'fc', nombre: 'FinanCasanare', tipo: 'Tasa mensual', tasa: 2.6, plazos: [6, 12], inicialMin: 0 }
+        ],
+        Motorola: [
+          { id: 'fc', nombre: 'FinanCasanare', tipo: 'Tasa mensual', tasa: 2.5, plazos: [6, 12], inicialMin: 0 }
+        ]
+      },
+      Tablets: {
+        Samsung: [
+          { id: 'cf', nombre: 'Crédito Fácil', tipo: 'Tasa mensual', tasa: 2.0, plazos: [6, 12, 18, 24], inicialMin: 10 },
+          { id: 'pf', nombre: 'PagoFlex', tipo: 'Tasa mensual', tasa: 1.8, plazos: [12, 24], inicialMin: 20 }
+        ],
+        Apple: [
+          { id: 'cf', nombre: 'Crédito Fácil', tipo: 'Tasa mensual', tasa: 1.9, plazos: [12, 18, 24], inicialMin: 20 }
+        ],
+        Lenovo: [
+          { id: 'fc', nombre: 'FinanCasanare', tipo: 'Tasa mensual', tasa: 2.4, plazos: [6, 12], inicialMin: 0 }
+        ]
+      }
+    };
+    this.state = { categoria: 'Celulares', marca: 'Samsung', fin: 'cf', precio: 1899900, inicial: '10', plazo: '12' };
+  }
+  cop(n) { return '$ ' + Math.round(n).toLocaleString('es-CO').replace(/,/g, '.'); }
+  renderVals() {
+    const s = this.state;
+    const cat = this.tasas[s.categoria];
+    const marcasList = Object.keys(cat);
+    const marca = cat[s.marca] ? s.marca : marcasList[0];
+    const fins = cat[marca];
+    const fin = fins.find(f => f.id === s.fin) || fins[0];
+    const plazo = fin.plazos.indexOf(Number(s.plazo)) >= 0 ? Number(s.plazo) : fin.plazos[0];
+    const inicialOpts = [0, 10, 20, 30].filter(p => p >= fin.inicialMin);
+    const inicial = inicialOpts.indexOf(Number(s.inicial)) >= 0 ? Number(s.inicial) : inicialOpts[0];
+    const precio = Number(s.precio) || 0;
+    const financia = precio * (1 - inicial / 100);
+    const i = fin.tasa / 100;
+    const cuota = financia > 0 ? financia * i / (1 - Math.pow(1 + i, -plazo)) : 0;
+    const total = cuota * plazo;
+    return {
+      yes: true,
+      theme: this.props.theme ?? 'light',
+      logoSrc: (this.props.theme ?? 'light') === 'dark' ? '/_blob/b9b74230094a72b1b0ab031cad78c8dc' : '/_blob/6083dc97c87dc300922b3bc9e33cdf22',
+      categorias: Object.keys(this.tasas).map(c => ({ value: c, label: c })),
+      categoria: s.categoria,
+      setCategoria: (v) => this.setState({ categoria: v }),
+      marcas: marcasList.map(m => ({ nombre: m, variant: m === marca ? 'tinted' : 'secondary', pick: () => this.setState({ marca: m }) })),
+      financieras: fins.map(f => ({
+        nombre: f.nombre,
+        detalle: f.tipo + ' · plazos ' + f.plazos.join(', ') + (f.inicialMin ? ' · inicial mín. ' + f.inicialMin + ' %' : ''),
+        tasaTxt: f.tasa.toFixed(1).replace('.', ',') + ' %',
+        on: f.id === fin.id ? 'true' : 'false',
+        cls: 'fin' + (f.id === fin.id ? ' fin--on' : ''),
+        pick: () => this.setState({ fin: f.id })
+      })),
+      precioTxt: precio ? this.cop(precio) : '',
+      setPrecio: (e) => this.setState({ precio: Number(String(e.target.value).replace(/[^0-9]/g, '')) }),
+      iniciales: inicialOpts.map(p => ({ value: String(p), label: p + ' %' })),
+      inicial: String(inicial),
+      setInicial: (v) => this.setState({ inicial: v }),
+      plazos: fin.plazos.map(p => ({ value: String(p), label: String(p) })),
+      plazo: String(plazo),
+      setPlazo: (v) => this.setState({ plazo: v }),
+      finSel: fin.nombre,
+      cuotaTxt: this.cop(cuota),
+      resumen: plazo + ' cuotas · ' + fin.tasa.toFixed(1).replace('.', ',') + ' % mensual · inicial ' + this.cop(precio * inicial / 100),
+      financiaTxt: this.cop(financia),
+      interesTxt: this.cop(total - financia),
+      totalTxt: this.cop(total + precio * inicial / 100)
+    };
+  }
+}
+</script>
+</body>
+</html>

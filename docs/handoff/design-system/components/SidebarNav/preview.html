@@ -1,0 +1,41 @@
+<!-- @dsCard group="Navigation" height=420 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    var [active, setActive] = React.useState('pedidos');
+    return h('div', { style: { height: '388px', width: '240px', background: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' } },
+      h(E.SidebarNav, { activeId: active, onSelect: setActive, logo: '/_blob/d162839340ab60e0506afac7a7453020',
+        user: { name: 'Jesús Vallecilla', role: 'Administrador' },
+        items: [
+          { id: 'inicio', label: 'Inicio', icon: 'home' },
+          { id: 'clientes', label: 'Clientes', icon: 'person', count: 248 },
+          { id: 'pedidos', label: 'Pedidos', icon: 'cart', count: 23 },
+          { id: 'conversaciones', label: 'Conversaciones', icon: 'chat', count: 5 },
+          { id: 'productos', label: 'Productos', icon: 'box' },
+          { id: 'informes', label: 'Informes', icon: 'chart' },
+          { section: 'Canales' },
+          { id: 'ig', label: 'Instagram', icon: 'instagram' },
+          { id: 'wa', label: 'WhatsApp', icon: 'whatsapp' }] }));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

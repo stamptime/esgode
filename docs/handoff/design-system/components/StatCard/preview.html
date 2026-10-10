@@ -1,0 +1,31 @@
+<!-- @dsCard group="Data display" height=150 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px' } },
+      h(E.StatCard, { label: 'Ventas del mes', value: '$ 4.280.000', delta: '+12 %', hint: 'vs. septiembre' }),
+      h(E.StatCard, { label: 'Pedidos abiertos', value: '23', delta: '+4', hint: 'esta semana' }),
+      h(E.StatCard, { label: 'Clientes nuevos', value: '12', delta: '−3', deltaTone: 'down', hint: 'vs. septiembre' }),
+      h(E.StatCard, { label: 'Sin responder', value: '5', deltaTone: 'flat', hint: 'más antiguo: hace 2 h' }));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

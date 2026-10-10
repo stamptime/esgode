@@ -1,0 +1,35 @@
+<!-- @dsCard group="Data display" height=100 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    return h('div', { className: 'col', style: { gap: '12px' } },
+      h('div', { className: 'row' },
+        h(E.Badge, { tone: 'success' }, 'Pagado'), h(E.Badge, { tone: 'success' }, 'Entregado'),
+        h(E.Badge, { tone: 'warning' }, 'Por pagar'), h(E.Badge, { tone: 'warning' }, 'Stock bajo'),
+        h(E.Badge, { tone: 'danger' }, 'Cancelado'), h(E.Badge, { tone: 'danger' }, 'Devolución'),
+        h(E.Badge, { tone: 'accent' }, 'Nuevo'), h(E.Badge, { tone: 'neutral' }, 'Borrador')),
+      h('div', { className: 'row' },
+        h(E.Badge, { tone: 'success', dot: true }, 'En línea'), h(E.Badge, { tone: 'warning', dot: true }, 'Esperando pago'),
+        h(E.Badge, { tone: 'neutral', dot: true }, 'Archivado')));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

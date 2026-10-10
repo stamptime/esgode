@@ -1,0 +1,40 @@
+<!-- @dsCard group="Actions" height=150 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    return h('div', { className: 'col' },
+      h('div', { className: 'row' },
+        h(E.Button, { variant: 'primary' }, 'Crear pedido'),
+        h(E.Button, { variant: 'secondary' }, 'Exportar'),
+        h(E.Button, { variant: 'tinted' }, 'Filtrar'),
+        h(E.Button, { variant: 'plain' }, 'Ver todos'),
+        h(E.Button, { variant: 'danger' }, 'Cancelar pedido'),
+        h(E.Button, { variant: 'primary', disabled: true }, 'Guardando…')),
+      h('div', { className: 'row' },
+        h(E.Button, { variant: 'primary', pill: true, size: 'lg', icon: 'plus' }, 'Nuevo cliente'),
+        h(E.Button, { variant: 'secondary', size: 'md', icon: 'check' }, 'Marcar como pagado'),
+        h(E.Button, { variant: 'secondary', size: 'sm' }, 'Editar'),
+        h(E.Button, { variant: 'secondary', icon: 'search', label: 'Buscar' }),
+        h(E.Button, { variant: 'plain', size: 'sm', icon: 'chevron', label: 'Siguiente' })));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

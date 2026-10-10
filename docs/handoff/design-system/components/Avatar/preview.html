@@ -1,0 +1,32 @@
+<!-- @dsCard group="Data display" height=96 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    return h('div', { className: 'row', style: { gap: '16px' } },
+      h(E.Avatar, { name: 'Camila Rojas', size: 'sm' }),
+      h(E.Avatar, { name: 'Camila Rojas', size: 'md' }),
+      h(E.Avatar, { name: 'Andrés Felipe Mora', size: 'lg' }),
+      h(E.Avatar, { name: 'Esgode Store', size: 'xl' }),
+      h(E.Avatar, { name: 'Valentina Suárez', size: 'lg', src: 'data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 44 44%22%3E%3Crect width=%2244%22 height=%2244%22 fill=%22%23c9d6e3%22/%3E%3Ccircle cx=%2222%22 cy=%2217%22 r=%228%22 fill=%22%236e6e73%22/%3E%3Cellipse cx=%2222%22 cy=%2238%22 rx=%2214%22 ry=%229%22 fill=%22%236e6e73%22/%3E%3C/svg%3E' }));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

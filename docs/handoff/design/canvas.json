@@ -1,0 +1,108 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Calculadora.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Calculadora — staff (celular)",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "CalculadoraDark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Calculadora — oscuro",
+      "w": 390,
+      "x": 470,
+      "y": 1104
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Login (staff y admin)",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "MainDark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Login — oscuro",
+      "w": 390,
+      "x": 0,
+      "y": 1104
+    },
+    "Tasas.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "is_interactive": true,
+      "title": "Tasas — admin (escritorio)",
+      "w": 1280,
+      "x": 940,
+      "y": 0
+    },
+    "TasasDark.dc.html": {
+      "expand": "fill",
+      "h": 844,
+      "is_interactive": true,
+      "title": "Tasas — oscuro",
+      "w": 1280,
+      "x": 940,
+      "y": 1104
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-10T13:57:04Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/code/artifact/b45ed9b4-e05e-4a38-ad27-09e8e5ad0070",
+      "copiedAt": "2026-10-10T15:12:00Z",
+      "namespace": "esgode",
+      "title": "Esgode CRM",
+      "version": "1791644485-e4f1"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "flujo": {
+      "kind": "title1",
+      "maxW": 2220,
+      "text": "Esgode CRM · Acceso y módulo Calculadora",
+      "w": 240,
+      "x": 0,
+      "y": -384
+    },
+    "oscuro": {
+      "kind": "title1",
+      "maxW": 2220,
+      "text": "Modo oscuro",
+      "w": 240,
+      "x": 0,
+      "y": 844
+    },
+    "roles": {
+      "fill": "blue",
+      "maxH": 100,
+      "text": "El rol (admin o staff) vive en la cuenta, no se elige al entrar. Staff → abre la Calculadora en el celular. Admin → entra al escritorio y define tasas por categoría › marca › financiera.",
+      "w": 860,
+      "x": 0,
+      "y": -150
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Calculadora.dc.html",
+    "Tasas.dc.html",
+    "MainDark.dc.html",
+    "CalculadoraDark.dc.html",
+    "TasasDark.dc.html"
+  ],
+  "pages": [],
+  "title": "Esgode CRM — Login y Calculadora"
+}

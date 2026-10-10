@@ -1,0 +1,43 @@
+<!-- @dsCard group="Data display" height=352 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    var [sel, setSel] = React.useState('ESG-2026-00418');
+    var rows = [
+      { id: 'ESG-2026-00418', cliente: 'Camila Rojas', ig: '@camirojas', items: 3, total: '$ 189.900', pago: ['success','Pagado'], envio: ['warning','Por enviar'], fecha: '10 oct 2026' },
+      { id: 'ESG-2026-00417', cliente: 'Andrés Felipe Mora', ig: '@afmora', items: 1, total: '$ 64.900', pago: ['warning','Por pagar'], envio: ['neutral','—'], fecha: '09 oct 2026' },
+      { id: 'ESG-2026-00416', cliente: 'Valentina Suárez', ig: '@valen.sz', items: 2, total: '$ 129.800', pago: ['success','Pagado'], envio: ['success','Entregado'], fecha: '08 oct 2026' },
+      { id: 'ESG-2026-00415', cliente: 'Laura Castañeda', ig: '@lau.cast', items: 4, total: '$ 258.600', pago: ['danger','Cancelado'], envio: ['neutral','—'], fecha: '07 oct 2026' }];
+    var cols = [
+      { key: 'id', label: 'Pedido', mono: true, width: 170 },
+      { key: 'cliente', label: 'Cliente', render: function (r) {
+          return h('div', { className: 'es-table__cell-person' }, h(E.Avatar, { name: r.cliente, size: 'md' }),
+            h('div', null, h('div', null, r.cliente), h('div', { className: 'es-table__secondary' }, h(E.Icon, { name: 'instagram' }), ' ', r.ig))); } },
+      { key: 'items', label: 'Artículos', align: 'right', mono: true },
+      { key: 'total', label: 'Total', align: 'right', mono: true },
+      { key: 'pago', label: 'Pago', render: function (r) { return h(E.Badge, { tone: r.pago[0] }, r.pago[1]); } },
+      { key: 'envio', label: 'Envío', render: function (r) { return h(E.Badge, { tone: r.envio[0] }, r.envio[1]); } },
+      { key: 'fecha', label: 'Fecha', render: function (r) { return h('span', { className: 'es-table__secondary' }, r.fecha); } }];
+    return h(E.DataTable, { columns: cols, rows: rows, rowKey: 'id', selectedKey: sel, onRowClick: function (r) { setSel(r.id); } });
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

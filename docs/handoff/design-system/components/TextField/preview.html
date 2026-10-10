@@ -1,0 +1,31 @@
+<!-- @dsCard group="Inputs" height=384 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  body { background: var(--surface); padding: 16px; font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root" class="es-root"></div>
+<script>
+(function () {
+  var E = window.Esgode, h = React.createElement;
+  var root = ReactDOM.createRoot(document.getElementById('root'));
+  function App() {
+
+    return h('div', { className: 'col', style: { maxWidth: '440px' } },
+      h(E.TextField, { label: 'Buscar', placeholder: 'Nombre, @usuario o teléfono', leading: 'search' }),
+      h(E.TextField, { label: 'Nombre completo', defaultValue: 'Camila Rojas Pérez', hint: 'Como aparece en la guía de envío.' }),
+      h(E.TextField, { label: 'WhatsApp', defaultValue: '310 555 01', error: 'Escribe un número con indicativo (+57…).', outlined: true }),
+      h(E.TextField, { label: 'Ciudad', defaultValue: 'Yopal, Casanare', disabled: true }));
+  }
+  root.render(h(App));
+})();
+</script>
+</body>
+</html>

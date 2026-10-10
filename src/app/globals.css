@@ -1,0 +1,92 @@
+@import "tailwindcss";
+/* Sistema de diseño Esgode: tokens y componentes del handoff, en capas para
+   que las utilidades de Tailwind puedan ajustarlos. */
+@import "../styles/tokens.css" layer(base);
+@import "../styles/components.css" layer(components);
+
+/* Tailwind a partir de tokens.json: los colores siguen el tema activo
+   (`data-theme`), el espaciado es la misma rejilla de 4px (p-4 = space-4). */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-tertiary: var(--ink-tertiary);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-hairline: var(--hairline);
+  --color-border-control: var(--border-control);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-text: var(--danger-text);
+  --color-scrim: var(--scrim);
+}
+
+@theme {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 980px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-display: var(--font-quicksand, "Quicksand"), -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--surface);
+  }
+}
+
+@layer components {
+  /* Marca: archivo ink en claro, blanco en oscuro. Nunca se recolorea. */
+  .es-mark { display: inline-flex; flex: none; }
+  .es-mark img { width: 100%; height: 100%; object-fit: contain; }
+  .es-mark__white { display: none; }
+  [data-theme="dark"] .es-mark__ink { display: none; }
+  [data-theme="dark"] .es-mark__white { display: block; }
+
+  .es-caption-label { font-size: 11px; line-height: 13px; font-weight: 500; letter-spacing: 0.2px; text-transform: uppercase; color: var(--ink-secondary); }
+
+  .es-side__item[disabled] { opacity: var(--opacity-disabled); cursor: default; pointer-events: none; }
+  .es-side__footer-text { flex: 1; min-width: 0; }
+
+  /* Calculadora: financiera como radio en tarjeta */
+  .fin { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); border: 1px solid var(--hairline); background: var(--surface-raised); font-family: var(--font-sans); color: var(--ink); cursor: pointer; }
+  .fin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .fin--on { background: var(--surface-selected); border-color: var(--accent); }
+  .radio { width: 20px; height: 20px; border-radius: var(--radius-pill); border: 1.5px solid var(--border-control); flex: none; display: flex; align-items: center; justify-content: center; }
+  .fin--on .radio { border-color: var(--accent); background: var(--accent); }
+  .radio i { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--on-accent); display: none; }
+  .fin--on .radio i { display: block; }
+
+  /* Tasas: chips de selección */
+  .chip { height: 32px; padding: 0 var(--space-4); border-radius: var(--radius-pill); border: 1px solid var(--border-control); background: var(--surface-raised); font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .chip--on { background: var(--surface-selected); border-color: var(--accent); color: var(--accent-text); }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chip[disabled] { opacity: var(--opacity-disabled); cursor: default; }
+
+  /* Sheet de confirmación */
+  .es-sheet { margin: auto; width: min(400px, calc(100vw - 32px)); padding: var(--space-6); border: 1px solid var(--hairline); border-radius: var(--radius-xl); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-sheet); }
+  .es-sheet::backdrop { background: var(--scrim); }
+}
