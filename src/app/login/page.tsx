@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [recordar, setRecordar] = useState(true);
   const [error, setError] = useState("");
   const [ayuda, setAyuda] = useState(false);
+  const [entrando, setEntrando] = useState(false);
 
   // Con sesión abierta no hay nada que hacer aquí.
   const destino = listo && actual ? inicioDe(actual.rol) : null;
@@ -27,9 +28,15 @@ export default function LoginPage() {
       setError("Escribe tu usuario y tu contraseña para ingresar.");
       return;
     }
-    if (!(await iniciarSesion(usuario, clave, recordar))) {
-      setError("Revisa el usuario y la contraseña; deben ser los que te asignó administración.");
+    setEntrando(true);
+    try {
+      if (!(await iniciarSesion(usuario, clave, recordar))) {
+        setError("Revisa el usuario y la contraseña; deben ser los que te asignó administración.");
+      }
+    } catch {
+      setError("No se pudo conectar. Revisa tu internet y vuelve a intentar.");
     }
+    setEntrando(false);
   }
 
   return (
@@ -87,14 +94,24 @@ export default function LoginPage() {
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" pill className="mt-4 w-full">
+        <Button type="submit" size="lg" pill className="mt-4 w-full" disabled={entrando}>
           Ingresar
         </Button>
       </form>
 
       <div className="mt-auto flex flex-col items-center gap-3 pt-10 text-center">
         <div className="footnote flex items-center gap-2 text-ink-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <rect x="4" y="10" width="16" height="11" rx="2" />
             <path d="M8 10V7a4 4 0 0 1 8 0v3" />
           </svg>

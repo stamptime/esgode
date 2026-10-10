@@ -27,6 +27,15 @@ export interface Financiera {
   nombre: string;
 }
 
+export interface Producto {
+  id: string;
+  categoriaId: string;
+  marcaId: string;
+  nombre: string;
+  precio: number; // pesos, sin decimales
+  activo: boolean; // solo los activos aparecen en la calculadora
+}
+
 // Unicidad: una Tasa por (categoriaId, marcaId, financieraId).
 export interface Tasa {
   id: string;
@@ -46,3 +55,12 @@ export type TasaEditable = Pick<
   Tasa,
   "tipo" | "tasa" | "plazos" | "inicialMin" | "activa"
 >;
+
+/** Lo que el admin configura. */
+export interface Datos {
+  categorias: Categoria[];
+  marcas: Marca[];
+  financieras: Financiera[];
+  productos: Producto[];
+  tasas: Tasa[];
+}

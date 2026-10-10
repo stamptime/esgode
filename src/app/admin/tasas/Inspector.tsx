@@ -5,9 +5,9 @@ import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { Badge, Button, SegmentedControl, TextField, Toggle } from "@/components/ui";
 import { cotizar, tasaEfectivaAnual, tasaMensual } from "@/lib/finanzas";
 import { cop, decimalATexto, fecha, hora, pct, textoADecimal } from "@/lib/formato";
-import { FINANCIERAS, MARCAS, nombreDe } from "@/lib/seed";
+import { nombreDe } from "@/lib/formato";
 import { actualizarTasa, crearTasa, eliminarTasa } from "@/lib/store";
-import type { Categoria, Tasa, TipoTasa } from "@/lib/types";
+import type { Categoria, Financiera, Marca, Tasa, TipoTasa } from "@/lib/types";
 
 const PLAZOS = [3, 6, 9, 12, 18, 24, 36];
 const PRECIO_EJEMPLO = 1899900;
@@ -24,6 +24,9 @@ interface Borrador {
 
 interface InspectorProps {
   categoria: Categoria;
+  /** Marcas de la categoría. */
+  marcas: Marca[];
+  financieras: Financiera[];
   /** Tasas ya definidas en la categoría; una por marca y financiera. */
   existentes: Tasa[];
   /** Sin `tasa`, el inspector crea una nueva. */
@@ -32,11 +35,18 @@ interface InspectorProps {
   onCerrar: () => void;
 }
 
-export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: InspectorProps) {
-  const marcas = MARCAS.filter((m) => m.categoriaId === categoria.id);
+export function Inspector({
+  categoria,
+  marcas,
+  financieras,
+  existentes,
+  tasa,
+  onCreada,
+  onCerrar,
+}: InspectorProps) {
   const ocupada = (marcaId: string, financieraId: string) =>
     existentes.some((t) => t.marcaId === marcaId && t.financieraId === financieraId);
-  const libreDe = (marcaId: string) => FINANCIERAS.find((f) => !ocupada(marcaId, f.id))?.id ?? "";
+  const libreDe = (marcaId: string) => financieras.find((f) => !ocupada(marcaId, f.id))?.id ?? "";
 
   const [original] = useState<Borrador>(() => {
     if (tasa) {
@@ -64,15 +74,15 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
   const [b, setB] = useState(original);
   const [intentado, setIntentado] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const [fallo, setFallo] = useState("");
   const cambiar = (parche: Partial<Borrador>) => setB((previo) => ({ ...previo, ...parche }));
 
   const valor = textoADecimal(b.tasaTxt);
   const inicialMin = textoADecimal(b.inicialTxt);
   const errores = {
     tasa:
-      b.tasaTxt.trim() && valor > 0 && valor <= 100
-        ? ""
-        : "Escribe una tasa mayor que 0, por ejemplo 2,1.",
+      b.tasaTxt.trim() && valor > 0 && valor <= 100 ? "" : "Escribe una tasa mayor que 0, por ejemplo 2,1.",
     plazos: b.plazos.length ? "" : "Elige al menos un plazo.",
     inicial:
       b.inicialTxt.trim() && Number.isInteger(inicialMin) && inicialMin >= 0 && inicialMin <= 90
@@ -99,19 +109,29 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
     setIntentado(true);
     if (!valido) return;
     const datos = { tipo: b.tipo, tasa: valor, plazos: b.plazos, inicialMin, activa: b.activa };
-    if (tasa) {
-      actualizarTasa(tasa.id, datos);
-    } else {
-      const nueva = crearTasa(
-        { categoriaId: categoria.id, marcaId: b.marcaId, financieraId: b.financieraId },
-        datos,
-      );
-      onCreada?.(nueva.id);
+    enviar(async () => {
+      // Al editar, el inspector se reinicia solo con los valores guardados.
+      if (tasa) return void (await actualizarTasa(tasa.id, datos));
+      const id = await crearTasa({ marcaId: b.marcaId, financieraId: b.financieraId }, datos);
+      if (id) onCreada?.(id);
+    });
+  }
+
+  // Guarda o elimina en el servidor; si falla, el mensaje dice qué hacer.
+  async function enviar(tarea: () => Promise<void>) {
+    setOcupado(true);
+    setFallo("");
+    try {
+      await tarea();
+    } catch (e) {
+      setFallo(e instanceof Error ? e.message : "No se pudo guardar. Vuelve a intentar.");
+    } finally {
+      setOcupado(false);
     }
   }
 
-  const marca = nombreDe(MARCAS, b.marcaId);
-  const financiera = nombreDe(FINANCIERAS, b.financieraId);
+  const marca = nombreDe(marcas, b.marcaId);
+  const financiera = nombreDe(financieras, b.financieraId);
 
   return (
     <aside
@@ -156,7 +176,7 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
           <div className="flex flex-col gap-2">
             <div className="callout text-ink-secondary">Financiera</div>
             <div className="flex flex-wrap gap-2">
-              {FINANCIERAS.map((f) => (
+              {financieras.map((f) => (
                 <button
                   key={f.id}
                   type="button"
@@ -224,7 +244,9 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
             );
           })}
         </div>
-        {intentado && errores.plazos ? <div className="callout text-danger-text">{errores.plazos}</div> : null}
+        {intentado && errores.plazos ? (
+          <div className="callout text-danger-text">{errores.plazos}</div>
+        ) : null}
       </div>
 
       <TextField
@@ -267,11 +289,16 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
             {tasa.actualizadoPor ? ` por ${tasa.actualizadoPor}` : ""}
           </div>
         ) : null}
+        {fallo ? (
+          <div className="callout text-danger-text" role="alert">
+            {fallo}
+          </div>
+        ) : null}
         <div className="flex gap-3">
           <Button
             variant="secondary"
             className="flex-1"
-            disabled={!!tasa && !sucio}
+            disabled={ocupado || (!!tasa && !sucio)}
             onClick={() => {
               if (!tasa) return onCerrar();
               setB(original);
@@ -280,12 +307,12 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
           >
             {tasa ? "Descartar" : "Cancelar"}
           </Button>
-          <Button icon="check" className="flex-1" disabled={!!tasa && !sucio} onClick={guardar}>
+          <Button icon="check" className="flex-1" disabled={ocupado || (!!tasa && !sucio)} onClick={guardar}>
             {tasa ? "Guardar tasa" : "Crear tasa"}
           </Button>
         </div>
         {tasa ? (
-          <Button variant="danger" size="sm" onClick={() => setConfirmando(true)}>
+          <Button variant="danger" size="sm" disabled={ocupado} onClick={() => setConfirmando(true)}>
             Eliminar tasa
           </Button>
         ) : null}
@@ -301,8 +328,10 @@ export function Inspector({ categoria, existentes, tasa, onCreada, onCerrar }: I
           onCancel={() => setConfirmando(false)}
           onConfirm={() => {
             setConfirmando(false);
-            eliminarTasa(tasa.id);
-            onCerrar();
+            enviar(async () => {
+              await eliminarTasa(tasa.id);
+              onCerrar();
+            });
           }}
         />
       ) : null}

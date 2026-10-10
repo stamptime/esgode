@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Button, DataTable, SegmentedControl, StatCard, TextField, type DataColumn } from "@/components/ui";
+import Link from "next/link";
+import {
+  Badge,
+  Button,
+  DataTable,
+  SegmentedControl,
+  StatCard,
+  TextField,
+  type DataColumn,
+} from "@/components/ui";
 import { esHoy, fecha, hora, pct } from "@/lib/formato";
-import { CATEGORIAS, FINANCIERAS, MARCAS, nombreDe } from "@/lib/seed";
+import { nombreDe } from "@/lib/formato";
 import { useStore } from "@/lib/store";
 import type { Tasa } from "@/lib/types";
 import { Inspector } from "./Inspector";
@@ -15,10 +24,20 @@ const sinTildes = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLo
 const COLUMNAS: DataColumn<Fila>[] = [
   { key: "marca", label: "Marca" },
   { key: "financiera", label: "Financiera" },
-  { key: "tipo", label: "Tipo de tasa", render: (r) => (r.tipo === "mensual" ? "Mensual" : "Efectiva anual") },
+  {
+    key: "tipo",
+    label: "Tipo de tasa",
+    render: (r) => (r.tipo === "mensual" ? "Mensual" : "Efectiva anual"),
+  },
   { key: "tasa", label: "Tasa", align: "right", mono: true, render: (r) => pct(r.tasa) },
   { key: "plazos", label: "Plazos", mono: true, render: (r) => r.plazos.join(" · ") },
-  { key: "inicialMin", label: "Inicial mín.", align: "right", mono: true, render: (r) => `${r.inicialMin} %` },
+  {
+    key: "inicialMin",
+    label: "Inicial mín.",
+    align: "right",
+    mono: true,
+    render: (r) => `${r.inicialMin} %`,
+  },
   {
     key: "activa",
     label: "Estado",
@@ -27,25 +46,45 @@ const COLUMNAS: DataColumn<Fila>[] = [
 ];
 
 export default function TasasPage() {
-  const { listo, tasas } = useStore();
-  const [categoriaId, setCategoriaId] = useState(CATEGORIAS[0].id);
+  const { listo, tasas, categorias, marcas, financieras } = useStore();
+  const [categoriaId, setCategoriaId] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [selId, setSelId] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
   if (!listo) return null;
 
-  const categoria = CATEGORIAS.find((c) => c.id === categoriaId) ?? CATEGORIAS[0];
+  const categoria = categorias.find((c) => c.id === categoriaId) ?? categorias[0];
+  if (!categoria) {
+    return (
+      <main className="flex min-w-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+        <div className="title-3">Aún no hay categorías</div>
+        <div className="callout text-ink-secondary">
+          Las tasas se definen por categoría, marca y financiera. Crea primero una categoría.
+        </div>
+        <Link href="/admin/categorias" className="es-btn es-btn--primary es-btn--md mt-4">
+          Crear categoría
+        </Link>
+      </main>
+    );
+  }
   const enCategoria = tasas.filter((t) => t.categoriaId === categoria.id);
   const q = sinTildes(busqueda.trim());
   const filas: Fila[] = enCategoria
-    .map((t) => ({ ...t, marca: nombreDe(MARCAS, t.marcaId), financiera: nombreDe(FINANCIERAS, t.financieraId) }))
+    .map((t) => ({
+      ...t,
+      marca: nombreDe(marcas, t.marcaId),
+      financiera: nombreDe(financieras, t.financieraId),
+    }))
     .filter((f) => !q || sinTildes(f.marca).includes(q) || sinTildes(f.financiera).includes(q));
   const sel = creando ? null : (filas.find((f) => f.id === selId) ?? filas[0] ?? null);
 
-  const marcasCat = MARCAS.filter((m) => m.categoriaId === categoria.id);
-  const hayLibres = enCategoria.length < marcasCat.length * FINANCIERAS.length;
+  const marcasCat = marcas.filter((m) => m.categoriaId === categoria.id);
+  const hayLibres = enCategoria.length < marcasCat.length * financieras.length;
 
-  const ultima = tasas.reduce<Tasa | null>((max, t) => (!max || t.actualizadoEn > max.actualizadoEn ? t : max), null);
+  const ultima = tasas.reduce<Tasa | null>(
+    (max, t) => (!max || t.actualizadoEn > max.actualizadoEn ? t : max),
+    null,
+  );
   const porQuien = ultima?.actualizadoPor ? `, por ${ultima.actualizadoPor.split(" ")[0]}` : "";
 
   return (
@@ -68,7 +107,7 @@ export default function TasasPage() {
             />
             <SegmentedControl
               label="Categoría"
-              options={CATEGORIAS.map((c) => ({
+              options={categorias.map((c) => ({
                 value: c.id,
                 label: c.nombre,
                 count: tasas.filter((t) => t.categoriaId === c.id).length,
@@ -94,8 +133,8 @@ export default function TasasPage() {
           />
           <StatCard
             label="Financieras"
-            value={String(FINANCIERAS.length)}
-            hint={FINANCIERAS.map((f) => f.nombre).join(" · ")}
+            value={String(financieras.length)}
+            hint={financieras.map((f) => f.nombre).join(" · ") || "Crea la primera en Financieras"}
           />
           {ultima ? (
             <StatCard
@@ -132,6 +171,8 @@ export default function TasasPage() {
         <Inspector
           key={`nueva-${categoria.id}`}
           categoria={categoria}
+          marcas={marcasCat}
+          financieras={financieras}
           existentes={enCategoria}
           onCreada={(id) => {
             setCreando(false);
@@ -144,6 +185,8 @@ export default function TasasPage() {
         <Inspector
           key={`${sel.id}-${sel.actualizadoEn}`}
           categoria={categoria}
+          marcas={marcasCat}
+          financieras={financieras}
           existentes={enCategoria}
           tasa={sel}
           onCerrar={() => setSelId(null)}

@@ -1,7 +1,7 @@
-import type { Categoria, Financiera, Marca, Tasa, TipoTasa, Usuario } from "./types";
+import type { Categoria, Financiera, Marca, Producto, Tasa, TipoTasa } from "./types";
 
-// Datos de ejemplo de los artboards. Las financieras son placeholders hasta
-// que se definan las reales y sus reglas.
+// Datos de ejemplo que `scripts/db.mjs setup` carga en una base de datos vacía;
+// después el admin los configura desde el escritorio. Financieras, productos y precios son placeholders.
 
 export const CATEGORIAS: Categoria[] = [
   { id: "cel", nombre: "Celulares" },
@@ -24,11 +24,11 @@ export const FINANCIERAS: Financiera[] = [
   { id: "fc", nombre: "FinanCasanare" },
 ];
 
-// Sin backend todavía: la verificación ocurre en el cliente. Se guarda el
-// SHA-256 de "usuario:contraseña", no la contraseña; aun así no es seguridad real.
-export const USUARIOS: (Usuario & { hash: string })[] = [
-  { id: "u-esmer", usuario: "esmer.gomez", nombre: "Esmer Gómez", rol: "admin", activo: true, hash: "9dbfc5de8175cbfac61c9d360c9d433788556aacfccd6ab0879c1c85b208d1d4" },
-  { id: "u-demo", usuario: "demo", nombre: "Usuario Demo", rol: "staff", activo: true, hash: "07f9fd18bcdc7fd3ce318d4abb7045916fecc2cedbc27f3145c53e630a47e27b" },
+export const PRODUCTOS: Producto[] = [
+  { id: "p-a55", categoriaId: "cel", marcaId: "cel-samsung", nombre: "Galaxy A55 256 GB", precio: 1899900, activo: true },
+  { id: "p-ip15", categoriaId: "cel", marcaId: "cel-apple", nombre: "iPhone 15 128 GB", precio: 3499900, activo: true },
+  { id: "p-rn13", categoriaId: "cel", marcaId: "cel-xiaomi", nombre: "Redmi Note 13 256 GB", precio: 899900, activo: true },
+  { id: "p-tab-s9fe", categoriaId: "tab", marcaId: "tab-samsung", nombre: "Galaxy Tab S9 FE", precio: 1799900, activo: true },
 ];
 
 const SEMILLA_EN = "2026-10-10T08:14:00-05:00";
@@ -72,6 +72,3 @@ export const TASAS_SEMILLA: Tasa[] = [
   tasa("tab-apple", "cf", 1.9, [12, 18, 24], 20),
   tasa("tab-lenovo", "fc", 2.4, [6, 12], 0),
 ];
-
-export const nombreDe = (lista: { id: string; nombre: string }[], id: string) =>
-  lista.find((x) => x.id === id)?.nombre ?? "";

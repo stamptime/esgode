@@ -9,7 +9,11 @@ import type { Usuario } from "@/lib/types";
 // Las secciones sin ruta aún no están diseñadas (docs/handoff/design-system/screens.md).
 const RUTAS: Record<string, string> = {
   tasas: "/admin/tasas",
+  financieras: "/admin/financieras",
   calc: "/calculadora",
+  categorias: "/admin/categorias",
+  marcas: "/admin/marcas",
+  productos: "/admin/productos",
 };
 
 const NAV: SidebarItem[] = [
@@ -17,10 +21,14 @@ const NAV: SidebarItem[] = [
   { id: "clientes", label: "Clientes", icon: "person", disabled: true },
   { id: "pedidos", label: "Pedidos", icon: "cart", disabled: true },
   { id: "conversaciones", label: "Conversaciones", icon: "chat", disabled: true },
-  { id: "productos", label: "Productos", icon: "box", disabled: true },
   { section: "Crédito" },
   { id: "tasas", label: "Tasas", icon: "chart" },
+  { id: "financieras", label: "Financieras", icon: "check" },
   { id: "calc", label: "Calculadora", icon: "plus" },
+  { section: "Catálogo" },
+  { id: "categorias", label: "Categorías", icon: "chevron" },
+  { id: "marcas", label: "Marcas", icon: "chevron" },
+  { id: "productos", label: "Productos", icon: "box" },
   { section: "Equipo" },
   { id: "usuarios", label: "Usuarios y roles", icon: "person", disabled: true },
 ];

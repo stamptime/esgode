@@ -45,3 +45,6 @@ export function fecha(iso: string): string {
 export function fechaHora(iso: string): string {
   return `${esHoy(iso) ? "hoy" : fecha(iso)}, ${hora(iso)}`;
 }
+
+export const nombreDe = (lista: { id: string; nombre: string }[], id: string) =>
+  lista.find((x) => x.id === id)?.nombre ?? "";

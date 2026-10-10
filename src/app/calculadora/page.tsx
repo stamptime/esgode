@@ -7,9 +7,9 @@ import { Mark } from "@/components/Mark";
 import { Avatar, Badge, Button, SegmentedControl, TextField, cx } from "@/components/ui";
 import { cotizar, type Cotizacion } from "@/lib/finanzas";
 import { cop, fechaHora, pct } from "@/lib/formato";
-import { CATEGORIAS, FINANCIERAS, MARCAS, nombreDe } from "@/lib/seed";
+import { nombreDe } from "@/lib/formato";
 import { cerrarSesion, useRequerirRol, useStore } from "@/lib/store";
-import type { Tasa, Usuario } from "@/lib/types";
+import type { Datos, Tasa, Usuario } from "@/lib/types";
 
 const INICIALES = [0, 10, 20, 30];
 
@@ -23,36 +23,42 @@ const tasaCorta = (t: Tasa) => pct(t.tasa) + (t.tipo === "mensual" ? " mensual" 
 
 export default function CalculadoraPage() {
   const usuario = useRequerirRol(["staff", "admin"]);
-  const { tasas } = useStore();
+  const datos = useStore();
   if (!usuario) return null;
-  return <Calculadora usuario={usuario} tasas={tasas.filter((t) => t.activa)} />;
+  return <Calculadora usuario={usuario} datos={datos} />;
 }
 
-function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
+function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
+  const tasas = datos.tasas.filter((t) => t.activa);
   const [categoriaId, setCategoriaId] = useState("");
   const [marcaId, setMarcaId] = useState("");
   const [financieraId, setFinancieraId] = useState("");
   const [precio, setPrecio] = useState(0);
+  const [productoId, setProductoId] = useState("");
   const [inicialSel, setInicialSel] = useState(-1);
   const [plazoSel, setPlazoSel] = useState(12);
   const [menu, setMenu] = useState(false);
   const [aviso, setAviso] = useState("");
 
   // Cada selección cae a la primera opción válida si la tasa elegida deja de existir.
-  const categorias = CATEGORIAS.filter((c) => tasas.some((t) => t.categoriaId === c.id));
+  const categorias = datos.categorias.filter((c) => tasas.some((t) => t.categoriaId === c.id));
   const categoria = categorias.find((c) => c.id === categoriaId) ?? categorias[0];
   const enCategoria = tasas.filter((t) => t.categoriaId === categoria?.id);
-  const marcas = MARCAS.filter((m) => enCategoria.some((t) => t.marcaId === m.id));
+  const marcas = datos.marcas.filter((m) => enCategoria.some((t) => t.marcaId === m.id));
   // Al cambiar de categoría se conserva la marca si existe allí con el mismo nombre.
   const marca =
     marcas.find((m) => m.id === marcaId) ??
-    marcas.find((m) => m.nombre === nombreDe(MARCAS, marcaId)) ??
+    marcas.find((m) => m.nombre === nombreDe(datos.marcas, marcaId)) ??
     marcas[0];
-  const opciones = FINANCIERAS.flatMap((f) => {
+  const opciones = datos.financieras.flatMap((f) => {
     const t = enCategoria.find((x) => x.marcaId === marca?.id && x.financieraId === f.id);
     return t ? [{ financiera: f, tasa: t }] : [];
   });
   const elegida = opciones.find((o) => o.financiera.id === financieraId) ?? opciones[0];
+
+  const productos = datos.productos.filter((p) => p.activo && p.marcaId === marca?.id);
+  // El producto solo cuenta mientras el precio siga siendo el suyo.
+  const producto = productos.find((p) => p.id === productoId && p.precio === precio);
 
   const esAdmin = usuario.rol === "admin";
 
@@ -137,7 +143,8 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
 
   const texto = [
     "Cotización Esgode",
-    `${categoria.nombre} · ${marca.nombre} · ${elegida.financiera.nombre}`,
+    producto ? `${marca.nombre} ${producto.nombre}` : `${categoria.nombre} · ${marca.nombre}`,
+    `Financiera: ${elegida.financiera.nombre}`,
     `Precio: ${cop(precio)}`,
     `Cuota inicial (${inicial} %): ${cop(c.inicialValor)}`,
     `${plazo} cuotas de ${cop(c.cuota)}`,
@@ -218,6 +225,28 @@ function Calculadora({ usuario, tasas }: { usuario: Usuario; tasas: Tasa[] }) {
               ))}
             </div>
           </section>
+
+          {productos.length ? (
+            <section className="flex flex-col gap-2">
+              <div className="es-caption-label">Producto</div>
+              <div className="flex flex-wrap gap-2">
+                {productos.map((p) => (
+                  <Button
+                    key={p.id}
+                    variant={p.id === producto?.id ? "tinted" : "secondary"}
+                    pill
+                    onClick={() => {
+                      setProductoId(p.id);
+                      setPrecio(p.precio);
+                      setAviso("");
+                    }}
+                  >
+                    {p.nombre}
+                  </Button>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="flex flex-col gap-2">
             <div className="es-caption-label">Financiera</div>

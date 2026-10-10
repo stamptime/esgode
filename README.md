@@ -6,27 +6,35 @@ Back-office de Esgode tech store (Yopal, Casanare). Primera capacidad: acceso po
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+vercel env pull .env.local   # DATABASE_URL (Neon) y SESSION_SECRET
+npm run dev                  # http://localhost:3000
 ```
 
-Usuarios:
+Local y producción usan la misma base de datos: lo que cambies en local se ve en el sitio.
 
-| Usuario       | Rol   | Entra a        | Contraseña                 |
-| ------------- | ----- | -------------- | -------------------------- |
-| `esmer.gomez` | admin | `/admin/tasas` | la tiene administración    |
-| `demo`        | staff | `/calculadora` | `demo2026`                 |
+## Usuarios
 
-Para cambiar una contraseña, reemplaza el `hash` del usuario en `src/lib/seed.ts` por el SHA-256 de `usuario:contraseña`:
+| Usuario       | Rol   | Entra a        | Contraseña              |
+| ------------- | ----- | -------------- | ----------------------- |
+| `esmer.gomez` | admin | `/admin/tasas` | la tiene administración |
+| `demo`        | staff | `/calculadora` | `demo2026`              |
+
+Los usuarios viven en la base de datos, con la contraseña cifrada (scrypt). Todavía no hay pantalla para administrarlos; se hace por consola:
 
 ```bash
-printf 'esmer.gomez:NUEVA_CLAVE' | sha256sum
+# crear un usuario, o cambiarle nombre, rol y contraseña
+node --env-file=.env.local scripts/db.mjs usuario maria.perez "María Pérez" staff 'su-contraseña'
+node --env-file=.env.local scripts/db.mjs desactivar maria.perez
+# crear las tablas en una base nueva (carga datos de ejemplo si está vacía)
+node --env-file=.env.local scripts/db.mjs setup
 ```
 
 ## Qué hay
 
 - `/login` — una pantalla para ambos roles; el rol vive en la cuenta.
-- `/calculadora` — móvil. Lee las tasas activas y cotiza con amortización francesa.
+- `/calculadora` — celular y escritorio. Lee las tasas activas y cotiza con amortización francesa.
 - `/admin/tasas` — escritorio. Crear, editar, activar y eliminar tasas por categoría › marca › financiera.
+- `/admin/financieras`, `/admin/categorias`, `/admin/marcas`, `/admin/productos` — catálogos que configura el admin. Eliminar arrastra lo que depende (una categoría se lleva sus marcas, productos y tasas). Los productos activos aparecen en la calculadora para cargar el precio.
 
 ## Estructura
 
@@ -34,11 +42,12 @@ printf 'esmer.gomez:NUEVA_CLAVE' | sha256sum
 - `src/styles/` — `tokens.css` y `components.css` del sistema de diseño, tal cual el handoff.
 - `src/app/globals.css` — Tailwind 4 mapeado a los tokens (colores por tema con `data-theme`, radios, fuentes).
 - `src/components/ui/` — los 10 componentes del sistema portados a TSX (mismas clases y props).
-- `src/lib/` — modelo de datos (`types.ts`), fórmula (`finanzas.ts`), formato es-CO (`formato.ts`), datos de ejemplo (`seed.ts`) y store (`store.ts`).
+- `src/lib/` — modelo de datos (`types.ts`), fórmula (`finanzas.ts`), formato es-CO (`formato.ts`), datos de ejemplo (`seed.ts`) y la copia en el navegador de los datos del servidor (`store.ts`).
+- `src/server/` — base de datos (`db.ts`), sesión en cookie firmada (`sesion.ts`) y las acciones del servidor que leen y escriben (`acciones.ts`); cada una verifica sesión y rol.
+- `scripts/db.mjs` — tablas, datos de ejemplo y usuarios.
 
 ## Pendiente por decidir
 
-- **Backend y autenticación.** Hoy no hay: los usuarios y el hash de sus contraseñas están en `src/lib/seed.ts` y se verifican en el navegador y las tasas se guardan en `localStorage` del navegador, así que no se comparten entre dispositivos. Sirve para demostración, no para datos sensibles.
 - Financieras reales y sus reglas (comisiones, seguros, tasa plana); las actuales son placeholders.
-- Usuarios y roles, y el resto del CRM (`docs/handoff/design-system/screens.md`). En el menú aparecen deshabilitados.
+- Pantalla de usuarios y roles (hoy por consola), y el resto del CRM (`docs/handoff/design-system/screens.md`). En el menú aparecen deshabilitados.
 - Logo en SVG o alta resolución.

@@ -2,112 +2,100 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { TASAS_SEMILLA, USUARIOS } from "./seed";
-import type { Rol, Tasa, TasaEditable, Usuario } from "./types";
+import * as servidor from "@/server/acciones";
+import type { Resultado } from "@/server/acciones";
+import type { Datos, Producto, Rol, Tasa, TasaEditable, Usuario } from "./types";
 
-// Store en memoria (sin backend todavía). Se respalda en el almacenamiento del
-// navegador para que las tasas y la sesión sobrevivan a una recarga.
+// Copia en el navegador de lo que vive en la base de datos. Se carga al abrir,
+// se refresca al volver a la pestaña y cada minuto, y cada escritura pasa por
+// una acción del servidor que devuelve los datos frescos.
 
-interface Estado {
-  listo: boolean; // false en el servidor y hasta hidratar
-  tasas: Tasa[];
-  usuarioId: string | null;
+interface Estado extends Datos {
+  listo: boolean; // false en el servidor y hasta la primera carga
+  usuario: Usuario | null;
 }
 
-const CLAVE_TASAS = "esgode.tasas.v1";
-const CLAVE_SESION = "esgode.sesion.v1";
+const VACIO: Datos = { categorias: [], marcas: [], financieras: [], productos: [], tasas: [] };
+const INICIAL: Estado = { listo: false, usuario: null, ...VACIO };
+const REFRESCO_MS = 60_000;
 
-const SERVIDOR: Estado = { listo: false, tasas: [], usuarioId: null };
-let estado: Estado | null = null;
+let estado = INICIAL;
+let cargando: Promise<void> | null = null;
 const oyentes = new Set<() => void>();
 
-function cargar(): Estado {
-  let tasas = TASAS_SEMILLA;
-  let usuarioId: string | null = null;
-  try {
-    const guardadas = localStorage.getItem(CLAVE_TASAS);
-    if (guardadas) tasas = JSON.parse(guardadas) as Tasa[];
-    usuarioId = sessionStorage.getItem(CLAVE_SESION) ?? localStorage.getItem(CLAVE_SESION);
-  } catch {
-    // Almacenamiento bloqueado o dañado: seguimos solo en memoria.
-  }
-  return { listo: true, tasas, usuarioId };
-}
-
-function leer(): Estado {
-  if (!estado) estado = cargar();
-  return estado;
-}
-
-function publicar(siguiente: Estado) {
-  estado = siguiente;
+function publicar(cambios: Partial<Estado>) {
+  estado = { ...estado, ...cambios };
   oyentes.forEach((avisar) => avisar());
 }
 
-function guardarTasas(tasas: Tasa[]) {
-  try {
-    localStorage.setItem(CLAVE_TASAS, JSON.stringify(tasas));
-  } catch {}
-  publicar({ ...leer(), tasas });
+function refrescar(): Promise<void> {
+  cargando ??= servidor
+    .obtenerEstado()
+    .then((r) =>
+      publicar(
+        r ? { listo: true, usuario: r.usuario, ...r.datos } : { listo: true, usuario: null, ...VACIO },
+      ),
+    )
+    // Sin conexión: se conserva lo que haya y se reintenta en el próximo refresco.
+    .catch(() => publicar({ listo: true }))
+    .finally(() => {
+      cargando = null;
+    });
+  return cargando;
 }
+
+function alVolver() {
+  if (document.visibilityState === "visible" && estado.usuario) refrescar();
+}
+let reloj: ReturnType<typeof setInterval> | undefined;
 
 function suscribir(avisar: () => void) {
   oyentes.add(avisar);
-  // Otra pestaña cambió tasas o sesión.
-  const alCambiar = (e: StorageEvent) => {
-    if (e.key === CLAVE_TASAS || e.key === CLAVE_SESION) publicar(cargar());
-  };
-  window.addEventListener("storage", alCambiar);
+  if (oyentes.size === 1) {
+    if (!estado.listo) refrescar();
+    document.addEventListener("visibilitychange", alVolver);
+    reloj = setInterval(alVolver, REFRESCO_MS);
+  }
   return () => {
     oyentes.delete(avisar);
-    window.removeEventListener("storage", alCambiar);
+    if (oyentes.size === 0) {
+      document.removeEventListener("visibilitychange", alVolver);
+      clearInterval(reloj);
+    }
   };
 }
 
 export function useStore(): Estado {
-  return useSyncExternalStore(suscribir, leer, () => SERVIDOR);
+  return useSyncExternalStore(
+    suscribir,
+    () => estado,
+    () => INICIAL,
+  );
 }
 
 /* ---------- Sesión ---------- */
 
-function usuarioDe(id: string | null): Usuario | null {
-  const u = USUARIOS.find((x) => x.id === id && x.activo);
-  if (!u) return null;
-  return { id: u.id, usuario: u.usuario, nombre: u.nombre, rol: u.rol, activo: u.activo };
-}
-
 export const inicioDe = (rol: Rol) => (rol === "admin" ? "/admin/tasas" : "/calculadora");
 
-async function sha256(texto: string): Promise<string> {
-  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
-  return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
+export async function iniciarSesion(
+  usuario: string,
+  clave: string,
+  recordar: boolean,
+): Promise<Usuario | null> {
+  const r = await servidor.entrar(usuario, clave, recordar);
+  if (!r) return null;
+  publicar({ listo: true, usuario: r.usuario, ...r.datos });
+  return r.usuario;
 }
 
-export async function iniciarSesion(usuario: string, clave: string, recordar: boolean): Promise<Usuario | null> {
-  const nombre = usuario.trim().toLowerCase();
-  const hash = await sha256(`${nombre}:${clave}`);
-  const u = USUARIOS.find((x) => x.activo && x.usuario === nombre && x.hash === hash);
-  if (!u) return null;
-  try {
-    localStorage.removeItem(CLAVE_SESION);
-    sessionStorage.removeItem(CLAVE_SESION);
-    (recordar ? localStorage : sessionStorage).setItem(CLAVE_SESION, u.id);
-  } catch {}
-  publicar({ ...leer(), usuarioId: u.id });
-  return usuarioDe(u.id);
-}
-
-export function cerrarSesion() {
-  try {
-    localStorage.removeItem(CLAVE_SESION);
-    sessionStorage.removeItem(CLAVE_SESION);
-  } catch {}
-  publicar({ ...leer(), usuarioId: null });
+export async function cerrarSesion() {
+  publicar({ usuario: null, ...VACIO });
+  await servidor.salir();
 }
 
 export function useSesion(): { listo: boolean; usuario: Usuario | null } {
-  const { listo, usuarioId } = useStore();
-  return { listo, usuario: usuarioDe(usuarioId) };
+  const { listo, usuario } = useStore();
+  return { listo, usuario };
 }
 
 /** Devuelve el usuario si su rol está permitido; si no, redirige y devuelve null. */
@@ -122,36 +110,48 @@ export function useRequerirRol(roles: Rol[]): Usuario | null {
   return permitido ? usuario : null;
 }
 
-/* ---------- Tasas ---------- */
+/* ---------- Configuración (solo admin) ---------- */
+// Cada función resuelve con el id creado (si aplica) o rechaza con un Error
+// cuyo mensaje ya está escrito para mostrarse.
 
-function sello(): Pick<Tasa, "actualizadoEn" | "actualizadoPor"> {
-  return {
-    actualizadoEn: new Date().toISOString(),
-    actualizadoPor: usuarioDe(leer().usuarioId)?.nombre ?? "",
-  };
+async function escribir(pedido: Promise<Resultado>): Promise<string | undefined> {
+  let r: Resultado;
+  try {
+    r = await pedido;
+  } catch {
+    throw new Error("No se pudo guardar. Revisa tu conexión y vuelve a intentar.");
+  }
+  if (!r.ok) {
+    if (r.sinSesion) publicar({ usuario: null, ...VACIO });
+    throw new Error(r.error);
+  }
+  publicar(r.datos);
+  return r.id;
 }
 
-export function crearTasa(
-  clave: Pick<Tasa, "categoriaId" | "marcaId" | "financieraId">,
-  datos: TasaEditable,
-): Tasa {
-  const { tasas } = leer();
-  const existe = tasas.some(
-    (t) =>
-      t.categoriaId === clave.categoriaId &&
-      t.marcaId === clave.marcaId &&
-      t.financieraId === clave.financieraId,
-  );
-  if (existe) throw new Error("Ya existe una tasa para esa marca y financiera.");
-  const nueva: Tasa = { id: crypto.randomUUID(), ...clave, ...datos, ...sello() };
-  guardarTasas([...tasas, nueva]);
-  return nueva;
-}
+export const crearCategoria = (nombre: string) => escribir(servidor.crearCategoria(nombre));
+export const actualizarCategoria = (id: string, nombre: string) =>
+  escribir(servidor.actualizarCategoria(id, nombre));
+export const eliminarCategoria = (id: string) => escribir(servidor.eliminarCategoria(id));
 
-export function actualizarTasa(id: string, datos: TasaEditable) {
-  guardarTasas(leer().tasas.map((t) => (t.id === id ? { ...t, ...datos, ...sello() } : t)));
-}
+export const crearMarca = (categoriaId: string, nombre: string) =>
+  escribir(servidor.crearMarca(categoriaId, nombre));
+export const actualizarMarca = (id: string, nombre: string) => escribir(servidor.actualizarMarca(id, nombre));
+export const eliminarMarca = (id: string) => escribir(servidor.eliminarMarca(id));
 
-export function eliminarTasa(id: string) {
-  guardarTasas(leer().tasas.filter((t) => t.id !== id));
-}
+export const crearFinanciera = (nombre: string) => escribir(servidor.crearFinanciera(nombre));
+export const actualizarFinanciera = (id: string, nombre: string) =>
+  escribir(servidor.actualizarFinanciera(id, nombre));
+export const eliminarFinanciera = (id: string) => escribir(servidor.eliminarFinanciera(id));
+
+type ProductoEditable = Omit<Producto, "id" | "categoriaId">;
+export const crearProducto = (datos: ProductoEditable) => escribir(servidor.crearProducto(datos));
+export const actualizarProducto = (id: string, datos: ProductoEditable) =>
+  escribir(servidor.actualizarProducto(id, datos));
+export const eliminarProducto = (id: string) => escribir(servidor.eliminarProducto(id));
+
+export const crearTasa = (clave: Pick<Tasa, "marcaId" | "financieraId">, datos: TasaEditable) =>
+  escribir(servidor.crearTasa(clave, datos));
+export const actualizarTasa = (id: string, datos: TasaEditable) =>
+  escribir(servidor.actualizarTasa(id, datos));
+export const eliminarTasa = (id: string) => escribir(servidor.eliminarTasa(id));
