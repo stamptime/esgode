@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import { AdminBarraMovil } from "@/components/AdminBarraMovil";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Mark } from "@/components/Mark";
 import { Avatar, Badge, Button, SegmentedControl, TextField, cx } from "@/components/ui";
@@ -65,9 +65,10 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
   // Celular: una columna con las acciones fijas abajo. Escritorio: formulario a la
   // izquierda y resultado a la derecha; el admin conserva la barra lateral.
   const marco = (contenido: ReactNode) => (
-    <div className="lg:flex lg:min-h-dvh">
+    <div className="flex h-dvh flex-col lg:h-auto lg:min-h-dvh lg:flex-row">
       {esAdmin ? <AdminSidebar usuario={usuario} className="hidden lg:flex" /> : null}
-      <div className="mx-auto flex h-dvh w-full max-w-[480px] min-w-0 flex-col overflow-hidden lg:h-auto lg:max-w-[1040px] lg:flex-1 lg:gap-6 lg:overflow-visible lg:p-6">
+      {esAdmin ? <AdminBarraMovil usuario={usuario} /> : null}
+      <div className="mx-auto flex min-h-0 w-full max-w-[480px] min-w-0 flex-1 flex-col overflow-hidden lg:max-w-[1040px] lg:gap-6 lg:overflow-visible lg:p-6">
         {contenido}
       </div>
     </div>
@@ -76,47 +77,49 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
   const ultima = tasas.reduce((max, t) => (t.actualizadoEn > max ? t.actualizadoEn : max), "");
 
   const encabezado = (
-    <header className="flex items-center justify-between px-5 pt-14 pb-3 lg:min-h-14 lg:px-0 lg:pt-0 lg:pb-0">
+    <header
+      className={cx(
+        "flex items-center justify-between px-5 pb-3 lg:min-h-14 lg:px-0 lg:pt-0 lg:pb-0",
+        // El admin ya tiene arriba la barra con el menú.
+        esAdmin ? "pt-4" : "pt-14",
+      )}
+    >
       <div className="flex flex-col gap-0.5">
         <h1 className="title-1 m-0">Calculadora</h1>
         <div className="callout text-ink-secondary">
           {ultima ? `Tasas actualizadas ${fechaHora(ultima)}` : "Sin tasas activas"}
         </div>
       </div>
-      <div className={cx("relative flex items-center gap-3", esAdmin && "lg:hidden")}>
-        <Mark size={28} />
-        <button
-          type="button"
-          className="cursor-pointer rounded-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          aria-label={`Cuenta de ${usuario.nombre}`}
-          aria-haspopup="menu"
-          aria-expanded={menu}
-          onClick={() => setMenu((v) => !v)}
-        >
-          <Avatar name={usuario.nombre} size="lg" />
-        </button>
-        {menu ? (
-          <div
-            role="menu"
-            className="absolute top-full right-0 z-10 mt-2 flex w-56 flex-col gap-3 rounded-lg border border-hairline bg-surface-raised p-4 shadow-(--shadow-popover)"
+      {/* El admin navega y cierra sesión desde la barra lateral o el menú. */}
+      {esAdmin ? null : (
+        <div className="relative flex items-center gap-3">
+          <Mark size={28} />
+          <button
+            type="button"
+            className="cursor-pointer rounded-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            aria-label={`Cuenta de ${usuario.nombre}`}
+            aria-haspopup="menu"
+            aria-expanded={menu}
+            onClick={() => setMenu((v) => !v)}
           >
-            <div>
-              <div className="headline">{usuario.nombre}</div>
-              <div className="footnote text-ink-secondary">
-                {usuario.rol === "admin" ? "Administrador" : "Staff"}
+            <Avatar name={usuario.nombre} size="lg" />
+          </button>
+          {menu ? (
+            <div
+              role="menu"
+              className="absolute top-full right-0 z-10 mt-2 flex w-56 flex-col gap-3 rounded-lg border border-hairline bg-surface-raised p-4 shadow-(--shadow-popover)"
+            >
+              <div>
+                <div className="headline">{usuario.nombre}</div>
+                <div className="footnote text-ink-secondary">Staff</div>
               </div>
+              <Button variant="secondary" onClick={cerrarSesion}>
+                Cerrar sesión
+              </Button>
             </div>
-            {usuario.rol === "admin" ? (
-              <Link role="menuitem" href="/admin/tasas" className="es-btn es-btn--tinted es-btn--md">
-                Editar tasas
-              </Link>
-            ) : null}
-            <Button variant="secondary" onClick={cerrarSesion}>
-              Cerrar sesión
-            </Button>
-          </div>
-        ) : null}
-      </div>
+          ) : null}
+        </div>
+      )}
     </header>
   );
 
