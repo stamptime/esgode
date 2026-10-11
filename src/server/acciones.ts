@@ -1,8 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import type { Datos, Producto, Tasa, TasaEditable, Usuario } from "@/lib/types";
-import { claveCoincide } from "./clave";
+import type { Datos, Producto, Tasa, TasaEditable, Usuario, UsuarioEditable } from "@/lib/types";
+import { claveCoincide, hashClave } from "./clave";
 import { sql } from "./db";
 import { abrirSesion, cerrarSesion, usuarioActual } from "./sesion";
 
@@ -13,8 +13,9 @@ export type Resultado =
 
 const SIN_SESION: Resultado = { ok: false, error: "Tu sesión terminó. Vuelve a ingresar.", sinSesion: true };
 
-async function leerDatos(): Promise<Datos> {
-  const [categorias, marcas, financieras, productos, tasas] = await sql.transaction(
+/** `conUsuarios` solo para admin: la lista de cuentas no sale hacia el staff. */
+async function leerDatos(conUsuarios: boolean): Promise<Datos> {
+  const [categorias, marcas, financieras, productos, tasas, usuarios] = await sql.transaction(
     [
       sql`select id, nombre from categorias order by orden`,
       sql`select id, categoria_id as "categoriaId", nombre from marcas order by orden`,
@@ -25,6 +26,7 @@ async function leerDatos(): Promise<Datos> {
             tipo, tasa::float8 as tasa, plazos, inicial_min as "inicialMin", activa,
             actualizado_en as "actualizadoEn", actualizado_por as "actualizadoPor"
           from tasas order by orden`,
+      sql`select id, usuario, nombre, rol, activo from usuarios order by lower(nombre)`,
     ],
     { readOnly: true },
   );
@@ -34,6 +36,7 @@ async function leerDatos(): Promise<Datos> {
     financieras,
     productos,
     tasas: tasas.map((t) => ({ ...t, actualizadoEn: new Date(t.actualizadoEn).toISOString() })),
+    usuarios: conUsuarios ? usuarios : [],
   } as Datos;
 }
 
@@ -41,7 +44,7 @@ async function leerDatos(): Promise<Datos> {
 
 export async function obtenerEstado(): Promise<{ usuario: Usuario; datos: Datos } | null> {
   const usuario = await usuarioActual();
-  return usuario ? { usuario, datos: await leerDatos() } : null;
+  return usuario ? { usuario, datos: await leerDatos(usuario.rol === "admin") } : null;
 }
 
 export async function entrar(
@@ -56,7 +59,10 @@ export async function entrar(
   if (!fila || !claveCoincide(String(clave), fila.clave_hash)) return null;
   await abrirSesion(fila.id, recordar === true);
   const { id, nombre: completo, rol, activo } = fila;
-  return { usuario: { id, usuario: nombre, nombre: completo, rol, activo }, datos: await leerDatos() };
+  return {
+    usuario: { id, usuario: nombre, nombre: completo, rol, activo },
+    datos: await leerDatos(rol === "admin"),
+  };
 }
 
 export async function salir() {
@@ -73,7 +79,7 @@ async function comoAdmin(escribir: (admin: Usuario) => Promise<string | void>): 
     return { ok: false, error: "Solo administración puede cambiar la configuración." };
   try {
     const id = await escribir(usuario);
-    return { ok: true, datos: await leerDatos(), id: id ?? undefined };
+    return { ok: true, datos: await leerDatos(true), id: id ?? undefined };
   } catch (e) {
     if (e instanceof Invalido) return { ok: false, error: e.message };
     // 23505: unique_violation · 23503: foreign_key_violation
@@ -233,5 +239,50 @@ export async function actualizarTasa(id: string, datos: TasaEditable) {
 export async function eliminarTasa(id: string) {
   return comoAdmin(async () => {
     await sql`delete from tasas where id = ${id}`;
+  });
+}
+
+/* ---------- Usuarios y roles ---------- */
+
+function usuarioValido(u: UsuarioEditable, claveObligatoria: boolean) {
+  const usuario = String(u.usuario ?? "").trim().toLowerCase();
+  if (!/^[a-z0-9._-]{3,40}$/.test(usuario))
+    throw new Invalido("Escribe el usuario en minúsculas, sin espacios ni tildes, por ejemplo nombre.apellido.");
+  if (u.rol !== "admin" && u.rol !== "staff") throw new Invalido("Elige el rol del usuario.");
+  const clave = String(u.clave ?? "");
+  if ((claveObligatoria || clave) && (clave.length < 8 || clave.length > 100))
+    throw new Invalido("Escribe una contraseña de al menos 8 caracteres.");
+  return { usuario, nombre: nombreValido(u.nombre), rol: u.rol, activo: u.activo === true, clave };
+}
+
+export async function crearUsuario(datos: UsuarioEditable) {
+  return comoAdmin(async () => {
+    const u = usuarioValido(datos, true);
+    const id = randomUUID();
+    await sql`
+      insert into usuarios (id, usuario, nombre, rol, activo, clave_hash)
+      values (${id}, ${u.usuario}, ${u.nombre}, ${u.rol}, ${u.activo}, ${hashClave(u.clave)})`;
+    return id;
+  });
+}
+
+// Nadie se quita a sí mismo el acceso: así siempre queda un administrador activo.
+export async function actualizarUsuario(id: string, datos: UsuarioEditable) {
+  return comoAdmin(async (admin) => {
+    const u = usuarioValido(datos, false);
+    if (id === admin.id && (u.rol !== "admin" || !u.activo))
+      throw new Invalido("No puedes quitarte el rol de administrador ni desactivar tu cuenta; pídeselo a otro administrador.");
+    await sql`
+      update usuarios set usuario = ${u.usuario}, nombre = ${u.nombre}, rol = ${u.rol}, activo = ${u.activo},
+        clave_hash = coalesce(${u.clave ? hashClave(u.clave) : null}, clave_hash)
+      where id = ${id}`;
+  });
+}
+
+export async function eliminarUsuario(id: string) {
+  return comoAdmin(async (admin) => {
+    if (id === admin.id)
+      throw new Invalido("No puedes eliminar tu propia cuenta; pídeselo a otro administrador.");
+    await sql`delete from usuarios where id = ${id}`;
   });
 }

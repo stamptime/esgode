@@ -14,6 +14,7 @@ const RUTAS: Record<string, string> = {
   categorias: "/admin/categorias",
   marcas: "/admin/marcas",
   productos: "/admin/productos",
+  usuarios: "/admin/usuarios",
 };
 
 const NAV: SidebarItem[] = [
@@ -30,7 +31,7 @@ const NAV: SidebarItem[] = [
   { id: "marcas", label: "Marcas", icon: "chevron" },
   { id: "productos", label: "Productos", icon: "box" },
   { section: "Equipo" },
-  { id: "usuarios", label: "Usuarios y roles", icon: "person", disabled: true },
+  { id: "usuarios", label: "Usuarios y roles", icon: "person" },
 ];
 
 export function AdminSidebar({

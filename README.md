@@ -19,7 +19,7 @@ Local y producción usan la misma base de datos: lo que cambies en local se ve e
 | `esmer.gomez` | admin | `/admin/tasas` | la tiene administración |
 | `demo`        | staff | `/calculadora` | `demo2026`              |
 
-Los usuarios viven en la base de datos, con la contraseña cifrada (scrypt). Todavía no hay pantalla para administrarlos; se hace por consola:
+Los usuarios viven en la base de datos, con la contraseña cifrada (scrypt). Se administran en **Usuarios y roles** del escritorio. La consola sirve para crear el primer administrador o recuperar el acceso:
 
 ```bash
 # crear un usuario, o cambiarle nombre, rol y contraseña
@@ -49,5 +49,5 @@ node --env-file=.env.local scripts/db.mjs setup
 ## Pendiente por decidir
 
 - Financieras reales y sus reglas (comisiones, seguros, tasa plana); las actuales son placeholders.
-- Pantalla de usuarios y roles (hoy por consola), y el resto del CRM (`docs/handoff/design-system/screens.md`). En el menú aparecen deshabilitados.
+- El resto del CRM (`docs/handoff/design-system/screens.md`). En el menú aparecen deshabilitados.
 - Logo en SVG o alta resolución.

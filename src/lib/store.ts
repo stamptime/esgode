@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import * as servidor from "@/server/acciones";
 import type { Resultado } from "@/server/acciones";
-import type { Datos, Producto, Rol, Tasa, TasaEditable, Usuario } from "./types";
+import type { Datos, Producto, Rol, Tasa, TasaEditable, Usuario, UsuarioEditable } from "./types";
 
 // Copia en el navegador de lo que vive en la base de datos. Se carga al abrir,
 // se refresca al volver a la pestaña y cada minuto, y cada escritura pasa por
@@ -15,7 +15,7 @@ interface Estado extends Datos {
   usuario: Usuario | null;
 }
 
-const VACIO: Datos = { categorias: [], marcas: [], financieras: [], productos: [], tasas: [] };
+const VACIO: Datos = { categorias: [], marcas: [], financieras: [], productos: [], tasas: [], usuarios: [] };
 const INICIAL: Estado = { listo: false, usuario: null, ...VACIO };
 const REFRESCO_MS = 60_000;
 
@@ -125,7 +125,9 @@ async function escribir(pedido: Promise<Resultado>): Promise<string | undefined>
     if (r.sinSesion) publicar({ usuario: null, ...VACIO });
     throw new Error(r.error);
   }
-  publicar(r.datos);
+  // Si el admin editó su propia cuenta, la sesión muestra el nombre nuevo.
+  const yo = r.datos.usuarios.find((u) => u.id === estado.usuario?.id);
+  publicar(yo ? { ...r.datos, usuario: yo } : r.datos);
   return r.id;
 }
 
@@ -155,3 +157,8 @@ export const crearTasa = (clave: Pick<Tasa, "marcaId" | "financieraId">, datos: 
 export const actualizarTasa = (id: string, datos: TasaEditable) =>
   escribir(servidor.actualizarTasa(id, datos));
 export const eliminarTasa = (id: string) => escribir(servidor.eliminarTasa(id));
+
+export const crearUsuario = (datos: UsuarioEditable) => escribir(servidor.crearUsuario(datos));
+export const actualizarUsuario = (id: string, datos: UsuarioEditable) =>
+  escribir(servidor.actualizarUsuario(id, datos));
+export const eliminarUsuario = (id: string) => escribir(servidor.eliminarUsuario(id));

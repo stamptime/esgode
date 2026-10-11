@@ -63,4 +63,8 @@ export interface Datos {
   financieras: Financiera[];
   productos: Producto[];
   tasas: Tasa[];
+  usuarios: Usuario[]; // solo llega a los admin; vacío para staff
 }
+
+/** Lo que el admin escribe de un usuario; sin `clave` se conserva la contraseña. */
+export type UsuarioEditable = Omit<Usuario, "id"> & { clave?: string };

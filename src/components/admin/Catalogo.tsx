@@ -178,7 +178,9 @@ function Formulario<Fila extends { id: string }>(
     enviar(async () => {
       const id = await props.guardar(v, actual);
       if (!actual && id) props.onCreado(id);
-      // Al editar, el formulario se reinicia solo con los valores guardados.
+      // Al editar, el formulario se reinicia solo con los valores guardados; esto
+      // cubre lo que no vuelve en ellos, como una contraseña recién asignada.
+      else setV(original);
     });
   }
 
@@ -198,12 +200,10 @@ function Formulario<Fila extends { id: string }>(
         const fijo = !!actual && !!c.soloAlCrear;
         if (c.tipo === "interruptor") {
           return (
-            <Toggle
-              key={c.clave}
-              label={c.etiqueta}
-              checked={v[c.clave] === true}
-              onChange={(on) => cambiar(c.clave, on)}
-            />
+            <div key={c.clave} className="flex flex-col gap-2">
+              <Toggle label={c.etiqueta} checked={v[c.clave] === true} onChange={(on) => cambiar(c.clave, on)} />
+              {error ? <div className="callout text-danger-text">{error}</div> : null}
+            </div>
           );
         }
         if (c.tipo === "opcion") {
