@@ -136,7 +136,7 @@ test("la clienta firma en el celular, en horizontal, sin código SMS", async () 
   await expect(staff.getByText(/Verificación del documento/)).toBeVisible();
 });
 
-test("el PDF firmado lleva la firma, el anexo con fotos y queda en el historial", async () => {
+test("el PDF firmado lleva la firma, no lleva el anexo de fotos y queda en el historial", async () => {
   await staff.getByRole("link", { name: "Ver contrato firmado y descargar PDF" }).click();
   await expect(staff.getByRole("heading", { name: "Contrato firmado" })).toBeVisible();
   await staff.getByRole("checkbox", { name: /Soporte 3 · Gerencia/ }).click();
@@ -148,13 +148,9 @@ test("el PDF firmado lleva la firma, el anexo con fotos y queda en el historial"
   const hojas = staff.locator(".doc-hoja:not(.doc-oculta)");
   await expect(hojas.first()).toContainText("Firmado electrónicamente · verificación");
   await expect(staff.getByRole("img", { name: /Firma de LAURA PÉREZ/ }).first()).toBeVisible();
-  const anexo = staff.locator(".doc-anexo").first();
-  await expect(anexo).toContainText("EVIDENCIAS FOTOGRÁFICAS");
-  await expect(anexo).toContainText("Liquidación de la negociación");
-  await expect(anexo).toContainText("Cédula de ciudadanía — frente");
-  // La foto llega por la ruta protegida y se ve.
-  const img = anexo.getByRole("img", { name: "Cédula de ciudadanía — frente" });
-  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  // El anexo de evidencias fotográficas está desactivado por ahora.
+  await expect(staff.locator(".doc-anexo")).toHaveCount(0);
+  await expect(staff.locator(".doc-paginas").first()).not.toContainText("EVIDENCIAS FOTOGRÁFICAS");
 
   await admin.goto("/admin/contratos");
   await admin.getByRole("cell", { name: numero.replace("No. ", "AP-") }).click();

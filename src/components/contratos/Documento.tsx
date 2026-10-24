@@ -18,7 +18,8 @@ import type { Contrato, Copia } from "@/lib/types";
 // El contrato tal como se imprime: hojas carta con encabezado, banda de la
 // copia y pie con el código y la página. Las mismas hojas sirven para la
 // vista en pantalla, la miniatura y el PDF. El borrador lleva marca de agua y
-// no tiene número; al final va el anexo de evidencias fotográficas.
+// no tiene número; al final iría el anexo de evidencias fotográficas, que por
+// ahora está apagado (ANEXO_FOTOS): las fotos se guardan pero no se imprimen.
 
 function Texto({ segs }: { segs: Segmento[] }) {
   return segs.map((s, i) => (s.b ? <b key={i}>{s.t}</b> : <span key={i}>{s.t}</span>));
@@ -173,6 +174,9 @@ function Anexo({ contrato: c, pagina }: { contrato: Contrato; pagina: PaginaAnex
   );
 }
 
+/** El anexo de evidencias fotográficas (con la liquidación) está desactivado por ahora. */
+export const ANEXO_FOTOS = false;
+
 type Hoja = { tipo: "texto"; bloques: Bloque[] } | { tipo: "anexo"; pagina: PaginaAnexo };
 
 export function hojasDe(contrato: Contrato): Hoja[] {
@@ -181,7 +185,7 @@ export function hojasDe(contrato: Contrato): Hoja[] {
       tipo: "texto",
       bloques,
     })),
-    ...paginasAnexo(contrato).map((pagina): Hoja => ({ tipo: "anexo", pagina })),
+    ...(ANEXO_FOTOS ? paginasAnexo(contrato) : []).map((pagina): Hoja => ({ tipo: "anexo", pagina })),
   ];
 }
 

@@ -425,8 +425,8 @@ function Revision(props: {
           </div>
           <div className="footnote text-ink-secondary">
             {firmado
-              ? "Las fotos nuevas se agregan al anexo de evidencias con fecha, hora y autor. El contrato firmado no cambia."
-              : "Las fotos van al anexo de evidencias fotográficas del contrato."}
+              ? "Las fotos nuevas quedan guardadas con fecha, hora y autor. El contrato firmado no cambia."
+              : "Las fotos quedan guardadas con el contrato."}
           </div>
         </section>
       ) : null}
