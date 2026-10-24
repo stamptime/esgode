@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import * as servidor from "@/server/acciones";
 import type { Resultado } from "@/server/acciones";
-import type { Datos, Producto, Rol, Tasa, TasaEditable, Usuario, UsuarioEditable } from "./types";
+import type { AjustesContratos, Datos, Producto, Rol, Tasa, TasaEditable, Usuario, UsuarioEditable } from "./types";
 
 // Copia en el navegador de lo que vive en la base de datos. Se carga al abrir,
 // se refresca al volver a la pestaña y cada minuto, y cada escritura pasa por
@@ -15,7 +15,15 @@ interface Estado extends Datos {
   usuario: Usuario | null;
 }
 
-const VACIO: Datos = { categorias: [], marcas: [], financieras: [], productos: [], tasas: [], usuarios: [] };
+const VACIO: Datos = {
+  categorias: [],
+  marcas: [],
+  financieras: [],
+  productos: [],
+  tasas: [],
+  usuarios: [],
+  ajustes: { tasa: 1.9, usura: null },
+};
 const INICIAL: Estado = { listo: false, usuario: null, ...VACIO };
 const REFRESCO_MS = 60_000;
 
@@ -162,3 +170,5 @@ export const crearUsuario = (datos: UsuarioEditable) => escribir(servidor.crearU
 export const actualizarUsuario = (id: string, datos: UsuarioEditable) =>
   escribir(servidor.actualizarUsuario(id, datos));
 export const eliminarUsuario = (id: string) => escribir(servidor.eliminarUsuario(id));
+
+export const guardarAjustes = (datos: AjustesContratos) => escribir(servidor.guardarAjustes(datos));

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import type { Datos, Producto, Tasa, TasaEditable, Usuario, UsuarioEditable } from "@/lib/types";
+import type { AjustesContratos, Datos, Producto, Tasa, TasaEditable, Usuario, UsuarioEditable } from "@/lib/types";
 import { claveCoincide, hashClave } from "./clave";
 import { sql } from "./db";
 import { abrirSesion, cerrarSesion, usuarioActual } from "./sesion";
@@ -15,7 +15,7 @@ const SIN_SESION: Resultado = { ok: false, error: "Tu sesión terminó. Vuelve a
 
 /** `conUsuarios` solo para admin: la lista de cuentas no sale hacia el staff. */
 async function leerDatos(conUsuarios: boolean): Promise<Datos> {
-  const [categorias, marcas, financieras, productos, tasas, usuarios] = await sql.transaction(
+  const [categorias, marcas, financieras, productos, tasas, usuarios, ajustes] = await sql.transaction(
     [
       sql`select id, nombre from categorias order by orden`,
       sql`select id, categoria_id as "categoriaId", nombre from marcas order by orden`,
@@ -27,6 +27,7 @@ async function leerDatos(conUsuarios: boolean): Promise<Datos> {
             actualizado_en as "actualizadoEn", actualizado_por as "actualizadoPor"
           from tasas order by orden`,
       sql`select id, usuario, nombre, rol, activo from usuarios order by lower(nombre)`,
+      sql`select tasa_contratos::float8 as tasa, usura::float8 as usura from ajustes where id = 1`,
     ],
     { readOnly: true },
   );
@@ -37,6 +38,7 @@ async function leerDatos(conUsuarios: boolean): Promise<Datos> {
     productos,
     tasas: tasas.map((t) => ({ ...t, actualizadoEn: new Date(t.actualizadoEn).toISOString() })),
     usuarios: conUsuarios ? usuarios : [],
+    ajustes: (ajustes[0] as AjustesContratos | undefined) ?? { tasa: 1.9, usura: null },
   } as Datos;
 }
 
@@ -284,5 +286,21 @@ export async function eliminarUsuario(id: string) {
     if (id === admin.id)
       throw new Invalido("No puedes eliminar tu propia cuenta; pídeselo a otro administrador.");
     await sql`delete from usuarios where id = ${id}`;
+  });
+}
+
+/* ---------- Contratos: tasa del mes ---------- */
+
+export async function guardarAjustes(datos: AjustesContratos) {
+  return comoAdmin(async (admin) => {
+    const tasa = Number(datos.tasa);
+    const usura = datos.usura == null ? null : Number(datos.usura);
+    if (!(tasa > 0 && tasa <= 10)) throw new Invalido("Escribe la tasa mensual, por ejemplo 1,9.");
+    if (usura != null && !(usura > 0 && usura <= 10))
+      throw new Invalido("Escribe la usura mensual, por ejemplo 2,1, o déjala vacía.");
+    await sql`
+      insert into ajustes (id, tasa_contratos, usura, actualizado_por) values (1, ${tasa}, ${usura}, ${admin.nombre})
+      on conflict (id) do update set tasa_contratos = excluded.tasa_contratos, usura = excluded.usura,
+        actualizado_en = now(), actualizado_por = excluded.actualizado_por`;
   });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { AdminBarraMovil } from "@/components/AdminBarraMovil";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Mark } from "@/components/Mark";
@@ -113,6 +114,9 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
                 <div className="headline">{usuario.nombre}</div>
                 <div className="footnote text-ink-secondary">Staff</div>
               </div>
+              <Link href="/contratos/nuevo" className="es-btn es-btn--primary es-btn--md" role="menuitem">
+                Nuevo contrato
+              </Link>
               <Button variant="secondary" onClick={cerrarSesion}>
                 Cerrar sesión
               </Button>

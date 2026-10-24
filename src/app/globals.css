@@ -97,6 +97,42 @@
   .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .chip[disabled] { opacity: var(--opacity-disabled); cursor: default; }
 
+  /* Contratos: opción como radio en tarjeta (texto de dos líneas) */
+  .opt { display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; text-align: left; padding: 14px; border-radius: var(--radius-lg); border: 1px solid var(--hairline); background: var(--surface-raised); font-family: var(--font-sans); color: var(--ink); cursor: pointer; }
+  .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt--on { background: var(--surface-selected); border-color: var(--accent); }
+  .opt .radio { margin-top: 1px; }
+  .opt--on .radio { border-color: var(--accent); background: var(--accent); }
+  .opt--on .radio i { display: block; }
+
+  /* Contratos: barra de pasos del formulario */
+  .paso { flex: 1; height: 4px; border-radius: var(--radius-pill); background: var(--surface-sunken); }
+  .paso--on { background: var(--accent); }
+
+  /* Contratos: filas de resumen y plan de pagos */
+  .fila { display: flex; justify-content: space-between; gap: var(--space-3); font-size: 15px; line-height: 20px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+  .fila:last-child { border-bottom: 0; }
+
+  /* Contratos: casilla de verificación como botón */
+  .casilla { display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; text-align: left; padding: 0; border: 0; background: transparent; font-family: var(--font-sans); font-size: 15px; line-height: 20px; color: var(--ink); cursor: pointer; }
+  .casilla:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+  .casilla--fila { align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--hairline); }
+  .casilla--fila:last-child { border-bottom: 0; }
+  .caja { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border-control); flex: none; display: flex; align-items: center; justify-content: center; color: var(--on-accent); }
+  .caja svg { display: none; }
+  .casilla--on .caja { background: var(--accent); border-color: var(--accent); }
+  .casilla--on .caja svg { display: block; }
+  .banda { font-size: 10px; line-height: 12px; font-weight: 700; letter-spacing: 0.5px; border: 1.5px solid var(--ink); color: var(--ink); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+
+  /* Contratos: condiciones para la clienta y recuadro de firma */
+  .term { display: flex; gap: var(--space-3); font-size: 15px; line-height: 20px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+  .term:last-child { border-bottom: 0; }
+  .term > span:first-child { flex: none; width: 96px; color: var(--ink-secondary); font-size: 13px; line-height: 20px; }
+  .pad { position: relative; height: 168px; border-radius: var(--radius-lg); border: 1px solid var(--border-control); background: var(--surface-raised); overflow: hidden; }
+  .pad svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+  .pad__guia { position: absolute; left: 16px; right: 16px; bottom: 40px; border-top: 1px dashed var(--border-control); pointer-events: none; }
+  .pad__ayuda { position: absolute; left: 16px; bottom: 44px; font-size: 13px; color: var(--ink-tertiary); pointer-events: none; }
+
   /* Menú del admin en celular: cajón desde la izquierda */
   .es-drawer { margin: 0; padding: 0; width: min(280px, 85vw); height: 100dvh; max-height: none; border: 0; border-right: 1px solid var(--hairline); border-radius: 0 var(--radius-xl) var(--radius-xl) 0; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sheet); overflow: hidden; }
   .es-drawer::backdrop { background: var(--scrim); }
@@ -104,4 +140,45 @@
   /* Sheet de confirmación */
   .es-sheet { margin: auto; width: min(400px, calc(100vw - 32px)); padding: var(--space-6); border: 1px solid var(--hairline); border-radius: var(--radius-xl); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-sheet); }
   .es-sheet::backdrop { background: var(--scrim); }
+}
+
+/* Documento del contrato: hoja carta (816 × 1056 px a 96 ppp) en blanco y
+   negro, igual en pantalla y al imprimir. No sigue el tema. */
+@layer components {
+  .doc { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #000; }
+  .doc-hoja { position: relative; width: 816px; height: 1056px; box-sizing: border-box; overflow: hidden; background: #fff; padding: 150px 87px 96px 94px; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.10); }
+  .doc-hoja--cv { padding: 40px 77px 56px 91px; font-family: "Arial Narrow", "Liberation Sans Narrow", Arial, sans-serif; }
+  .doc-hoja--cv .doc-p { font-size: 14.67px; line-height: 16.9px; }
+  .doc-hoja--cv .doc-firmas { font-size: 14.67px; line-height: 17px; margin-top: 20px; }
+  .doc-hoja--cv .doc-pie { left: 91px; right: 77px; bottom: 20px; }
+  .doc-p { margin: 0 0 12px; font-size: 13.33px; line-height: 18.4px; text-align: justify; }
+  .doc-titulo { margin: 0 0 22px; font-size: 13.33px; line-height: 18px; font-weight: 700; text-align: center; text-transform: uppercase; }
+  .doc-titulo--cv { font-size: 20px; line-height: 22px; margin-bottom: 14px; }
+  .doc-h { margin: 8px 0 10px; font-size: 13.33px; line-height: 18.4px; font-weight: 700; }
+  .doc-li { display: flex; gap: 10px; margin: 0 0 10px 18px; font-size: 13.33px; line-height: 18.4px; text-align: justify; }
+  .doc-li > span:first-child { flex: none; width: 16px; font-weight: 700; }
+  .doc-firmas { display: grid; grid-template-columns: 1fr 1fr 96px; column-gap: 28px; margin-top: 28px; font-size: 12px; line-height: 15px; }
+  .doc-firmas__lbl { font-weight: 700; margin-bottom: 6px; }
+  .doc-firmas__espacio { height: 70px; display: flex; align-items: flex-end; }
+  .doc-firmas__nombre { padding-top: 4px; }
+  .doc-huella { width: 96px; height: 110px; border: 1px solid #000; box-sizing: border-box; font-size: 8px; text-align: center; padding-top: 3px; }
+  .doc-cabecera { position: absolute; left: 94px; right: 87px; top: 44px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .doc-cabecera img { height: 56px; width: auto; }
+  .doc-tipo { text-align: right; font-size: 10.7px; line-height: 13px; font-weight: 700; text-transform: uppercase; }
+  .doc-copia { display: inline-block; margin-top: 8px; border: 1.5px solid #000; padding: 3px 8px; font-size: 10px; line-height: 12px; font-weight: 700; letter-spacing: .6px; }
+  .doc-copia--cv { position: absolute; right: 77px; top: 12px; margin-top: 0; font-family: Arial, sans-serif; }
+  .doc-pie { position: absolute; left: 94px; right: 87px; bottom: 36px; display: flex; justify-content: space-between; gap: 16px; font-size: 9.5px; line-height: 12px; color: #000; }
+}
+
+@page { size: letter; margin: 0; }
+@media print {
+  html, body { background: #fff !important; }
+  .no-imprimir { display: none !important; }
+  /* Cualquier bloque después de la última hoja, aunque mida 0, abre una página en blanco. */
+  body:has(.doc-impresion) > :not(.doc-impresion) { display: none !important; }
+  .doc-paginas { gap: 0 !important; padding: 0 !important; background: #fff !important; zoom: 1 !important; }
+  .doc-hoja { box-shadow: none; break-inside: avoid; }
+  /* Salto antes de cada hoja impresa salvo la primera: sin hoja en blanco al final. */
+  .doc-hoja:not(.doc-oculta) ~ .doc-hoja:not(.doc-oculta) { break-before: page; }
+  .doc-oculta { display: none !important; }
 }
