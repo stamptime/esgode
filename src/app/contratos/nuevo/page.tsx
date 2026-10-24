@@ -20,10 +20,11 @@ import {
   sumarMeses,
 } from "@/lib/contratos";
 import { cop, nombreDe, pct } from "@/lib/formato";
+import { borrarBorrador, guardarBorrador, leerBorrador } from "@/lib/borrador";
 import { useRequerirRol, useStore } from "@/lib/store";
 import { pedir } from "@/lib/useContrato";
 import { clientesAnteriores, crearContrato, proximosNumeros } from "@/server/contratos";
-import type { ClienteContrato, ContratoNuevo, Datos, EquipoContrato } from "@/lib/types";
+import type { ClienteContrato, ContratoNuevo, Datos, EquipoContrato, Usuario } from "@/lib/types";
 
 const sinTildes = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const digitos = (s: string) => s.replace(/[^0-9]/g, "");
@@ -50,15 +51,20 @@ export default function NuevoContratoPage() {
   const usuario = useRequerirRol(["staff", "admin"]);
   const datos = useStore();
   if (!usuario || !datos.listo) return null;
-  return <Formulario datos={datos} volver={usuario.rol === "admin" ? "/admin/contratos" : "/calculadora"} />;
+  return <Formulario datos={datos} usuario={usuario} volver={usuario.rol === "admin" ? "/admin/contratos" : "/calculadora"} />;
 }
 
-function Formulario({ datos, volver }: { datos: Datos; volver: string }) {
+const SIN_JURA = { tradicion: false, hurto: false, bloqueo: false };
+
+function Formulario({ datos, usuario, volver }: { datos: Datos; usuario: Usuario; volver: string }) {
   const router = useRouter();
   const main = useRef<HTMLElement>(null);
-  const [paso, setPaso] = useState(1);
-  const [d, setD] = useState(inicial);
-  const [jura, setJura] = useState({ tradicion: false, hurto: false, bloqueo: false });
+  // Solo se monta en el navegador (con la sesión cargada), así que puede leer el borrador al iniciar.
+  const [recuperado] = useState(() => leerBorrador(usuario.id));
+  const [paso, setPaso] = useState(recuperado?.paso ?? 1);
+  const [d, setD] = useState(() => recuperado?.d ?? inicial());
+  const [jura, setJura] = useState(recuperado?.jura ?? SIN_JURA);
+  const [aviso, setAviso] = useState(!!recuperado);
   const [intentado, setIntentado] = useState(0); // último paso en el que se pulsó Continuar
   const [numeros, setNumeros] = useState<{ acuerdo: number; compraventa: number; anio: number } | null>(null);
   const [clientes, setClientes] = useState<ClienteContrato[]>([]);
@@ -74,6 +80,20 @@ function Formulario({ datos, volver }: { datos: Datos; volver: string }) {
   useEffect(() => {
     main.current?.scrollTo({ top: 0 });
   }, [paso]);
+  // Cada cambio queda guardado: si el navegador recarga la página al volver de otra app, nada se pierde.
+  const conDatos = paso > 1 || !!d.cliente.nombre || !!d.capital;
+  useEffect(() => {
+    if (conDatos) guardarBorrador(usuario.id, { paso, d, jura });
+  }, [conDatos, paso, d, jura, usuario.id]);
+
+  function empezarDeNuevo() {
+    borrarBorrador(usuario.id);
+    setPaso(1);
+    setD(inicial());
+    setJura(SIN_JURA);
+    setIntentado(0);
+    setAviso(false);
+  }
 
   const cambiar = (parche: Partial<ContratoNuevo>) => setD((p) => ({ ...p, ...parche }));
   const cliente = (parche: Partial<ClienteContrato>) => setD((p) => ({ ...p, cliente: { ...p.cliente, ...parche } }));
@@ -109,6 +129,7 @@ function Formulario({ datos, volver }: { datos: Datos; volver: string }) {
     setFallo("");
     try {
       const { contrato } = await pedir(crearContrato(d));
+      borrarBorrador(usuario.id);
       router.push(`/contratos/${contrato.id}`);
     } catch (e) {
       setFallo((e as Error).message);
@@ -175,6 +196,14 @@ function Formulario({ datos, volver }: { datos: Datos; volver: string }) {
       mainRef={main}
       pie={pie}
     >
+      {aviso ? (
+        <div className="es-card flex items-center justify-between gap-3 py-3" role="status">
+          <span className="callout">Recuperamos el contrato que estabas llenando.</span>
+          <Button variant="plain" size="sm" onClick={empezarDeNuevo}>
+            Empezar de nuevo
+          </Button>
+        </div>
+      ) : null}
       {paso === 1 ? (
         <>
           <section className="flex flex-col gap-2">

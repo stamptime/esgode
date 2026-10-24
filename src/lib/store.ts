@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import * as servidor from "@/server/acciones";
+import { borrarBorrador } from "./borrador";
 import type { Resultado } from "@/server/acciones";
 import type { AjustesContratos, Datos, Producto, Rol, Tasa, TasaEditable, Usuario, UsuarioEditable } from "./types";
 
@@ -97,6 +98,7 @@ export async function iniciarSesion(
 }
 
 export async function cerrarSesion() {
+  borrarBorrador(); // datos de clientes a medio llenar no quedan en el equipo
   publicar({ usuario: null, ...VACIO });
   await servidor.salir();
 }
