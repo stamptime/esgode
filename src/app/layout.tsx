@@ -12,6 +12,8 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: { default: "Esgode CRM", template: "%s — Esgode CRM" },
   description: "CRM de Esgode tech store, Yopal.",
+  // Al abrirla desde la pantalla de inicio del iPhone, sin barras de Safari.
+  appleWebApp: { capable: true, title: "Esgode", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
