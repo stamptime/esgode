@@ -957,7 +957,7 @@ function Formulario({
                 <SegmentedControl
                   className="flex [&>button]:flex-1"
                   label="Número de cuotas"
-                  options={[2, 3, 4, 6, 9, 12].map((n) => ({ value: String(n), label: String(n) }))}
+                  options={[2, 3, 4, 5, 6, 9, 12].map((n) => ({ value: String(n), label: String(n) }))}
                   value={String(d.nCuotas)}
                   onChange={(v) => cambiar({ nCuotas: Number(v) })}
                 />

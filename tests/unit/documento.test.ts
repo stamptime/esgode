@@ -53,6 +53,12 @@ describe("borrador y periodicidad", () => {
     expect(t).toContain("Segunda cuota: El día 12 del mes NOVIEMBRE del año 2026");
     expect(t).toContain("Tercera cuota: El día 19 del mes NOVIEMBRE del año 2026");
   });
+  it("a 5 cuotas lista de la primera a la quinta y no más", () => {
+    const t = textoDe(bloquesDocumento(contrato({ nCuotas: 5, fechaPago: "2026-11-05" })));
+    expect(t).toContain("Quinta cuota: El día 05 del mes MARZO del año 2027");
+    expect(t).not.toContain("Sexta cuota");
+    expect(liquidacion(contrato({ nCuotas: 5 }))[3][1]).toBe("5 cuotas mensuales de $720.000");
+  });
 });
 
 describe("anexo de evidencias", () => {
