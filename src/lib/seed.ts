@@ -25,10 +25,31 @@ export const FINANCIERAS: Financiera[] = [
 ];
 
 export const PRODUCTOS: Producto[] = [
-  { id: "p-a55", categoriaId: "cel", marcaId: "cel-samsung", nombre: "Galaxy A55 256 GB", precio: 1899900, activo: true },
+  {
+    id: "p-a55",
+    categoriaId: "cel",
+    marcaId: "cel-samsung",
+    nombre: "Galaxy A55 256 GB",
+    precio: 1899900,
+    activo: true,
+  },
   { id: "p-ip15", categoriaId: "cel", marcaId: "cel-apple", nombre: "iPhone 15 128 GB", precio: 3499900, activo: true },
-  { id: "p-rn13", categoriaId: "cel", marcaId: "cel-xiaomi", nombre: "Redmi Note 13 256 GB", precio: 899900, activo: true },
-  { id: "p-tab-s9fe", categoriaId: "tab", marcaId: "tab-samsung", nombre: "Galaxy Tab S9 FE", precio: 1799900, activo: true },
+  {
+    id: "p-rn13",
+    categoriaId: "cel",
+    marcaId: "cel-xiaomi",
+    nombre: "Redmi Note 13 256 GB",
+    precio: 899900,
+    activo: true,
+  },
+  {
+    id: "p-tab-s9fe",
+    categoriaId: "tab",
+    marcaId: "tab-samsung",
+    nombre: "Galaxy Tab S9 FE",
+    precio: 1799900,
+    activo: true,
+  },
 ];
 
 const SEMILLA_EN = "2026-10-10T08:14:00-05:00";

@@ -85,8 +85,7 @@ export function Inspector({
   const valor = textoADecimal(b.tasaTxt);
   const inicialMin = textoADecimal(b.inicialTxt);
   const errores = {
-    tasa:
-      b.tasaTxt.trim() && valor > 0 && valor <= 100 ? "" : "Escribe una tasa mayor que 0, por ejemplo 2,1.",
+    tasa: b.tasaTxt.trim() && valor > 0 && valor <= 100 ? "" : "Escribe una tasa mayor que 0, por ejemplo 2,1.",
     plazos: b.plazos.length ? "" : "Elige al menos un plazo.",
     inicial:
       b.inicialTxt.trim() && Number.isInteger(inicialMin) && inicialMin >= 0 && inicialMin <= 90
@@ -138,10 +137,7 @@ export function Inspector({
   const financiera = nombreDe(financieras, b.financieraId);
 
   return (
-    <aside
-      className={claseInspector(abierto)}
-      aria-label={tasa ? `Tasa de ${marca} con ${financiera}` : "Nueva tasa"}
-    >
+    <aside className={claseInspector(abierto)} aria-label={tasa ? `Tasa de ${marca} con ${financiera}` : "Nueva tasa"}>
       <VolverALista onClick={onCerrar} />
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
@@ -194,9 +190,7 @@ export function Inspector({
                 </button>
               ))}
             </div>
-            <div className="callout text-ink-secondary">
-              Solo puedes elegir combinaciones que aún no tienen tasa.
-            </div>
+            <div className="callout text-ink-secondary">Solo puedes elegir combinaciones que aún no tienen tasa.</div>
           </div>
         </>
       )}
@@ -249,9 +243,7 @@ export function Inspector({
             );
           })}
         </div>
-        {intentado && errores.plazos ? (
-          <div className="callout text-danger-text">{errores.plazos}</div>
-        ) : null}
+        {intentado && errores.plazos ? <div className="callout text-danger-text">{errores.plazos}</div> : null}
       </div>
 
       <TextField
@@ -265,11 +257,7 @@ export function Inspector({
         error={intentado ? errores.inicial : undefined}
       />
 
-      <Toggle
-        label="Tasa activa en la calculadora"
-        checked={b.activa}
-        onChange={(v) => cambiar({ activa: v })}
-      />
+      <Toggle label="Tasa activa en la calculadora" checked={b.activa} onChange={(v) => cambiar({ activa: v })} />
 
       <div className="h-px bg-hairline" />
 

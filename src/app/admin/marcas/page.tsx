@@ -8,8 +8,7 @@ import type { Marca } from "@/lib/types";
 export default function MarcasPage() {
   const { listo, categorias, marcas, tasas, productos } = useStore();
   if (!listo) return null;
-  const de = <T extends { marcaId: string }>(lista: T[], m: Marca) =>
-    lista.filter((x) => x.marcaId === m.id).length;
+  const de = <T extends { marcaId: string }>(lista: T[], m: Marca) => lista.filter((x) => x.marcaId === m.id).length;
 
   return (
     <Catalogo<Marca>
@@ -24,9 +23,7 @@ export default function MarcasPage() {
         buscar: "Buscar marca o categoría",
         vacio: "Aún no hay marcas. Crea la primera con «Nueva marca».",
       }}
-      bloqueo={
-        categorias.length ? undefined : "Crea primero una categoría; las marcas se agregan dentro de ella."
-      }
+      bloqueo={categorias.length ? undefined : "Crea primero una categoría; las marcas se agregan dentro de ella."}
       columnas={[
         { key: "nombre", label: "Marca" },
         { key: "categoria", label: "Categoría", render: (m) => nombreDe(categorias, m.categoriaId) },
@@ -54,11 +51,7 @@ export default function MarcasPage() {
       validar={(v, actual) => {
         const nombre = String(v.nombre);
         if (!nombre.trim()) return { nombre: "Escribe el nombre de la marca, por ejemplo Samsung." };
-        if (
-          marcas.some(
-            (m) => m.id !== actual?.id && m.categoriaId === v.categoriaId && igual(m.nombre, nombre),
-          )
-        )
+        if (marcas.some((m) => m.id !== actual?.id && m.categoriaId === v.categoriaId && igual(m.nombre, nombre)))
           return {
             nombre: "Esa marca ya existe en la categoría; escribe otro nombre o elige otra categoría.",
           };

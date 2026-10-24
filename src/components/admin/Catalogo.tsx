@@ -152,8 +152,7 @@ function Formulario<Fila extends { id: string }>(
   const [confirmando, setConfirmando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState("");
-  const cambiar = (clave: string, valor: string | boolean) =>
-    setV((previo) => ({ ...previo, [clave]: valor }));
+  const cambiar = (clave: string, valor: string | boolean) => setV((previo) => ({ ...previo, [clave]: valor }));
 
   const errores = props.validar(v, actual);
   const valido = Object.values(errores).every((e) => !e);
@@ -185,10 +184,7 @@ function Formulario<Fila extends { id: string }>(
   }
 
   return (
-    <aside
-      className={claseInspector(props.abierto)}
-      aria-label={actual ? props.nombreDe(actual) : textos.nuevo}
-    >
+    <aside className={claseInspector(props.abierto)} aria-label={actual ? props.nombreDe(actual) : textos.nuevo}>
       <VolverALista onClick={props.onCerrar} />
       <div className="flex flex-col gap-1">
         <div className="es-caption-label">{props.titulo}</div>
@@ -283,12 +279,7 @@ function Formulario<Fila extends { id: string }>(
           >
             {actual ? "Descartar" : "Cancelar"}
           </Button>
-          <Button
-            icon="check"
-            className="flex-1"
-            disabled={ocupado || (!!actual && !sucio)}
-            onClick={guardar}
-          >
+          <Button icon="check" className="flex-1" disabled={ocupado || (!!actual && !sucio)} onClick={guardar}>
             {actual ? textos.guardar : textos.crear}
           </Button>
         </div>

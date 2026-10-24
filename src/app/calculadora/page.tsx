@@ -4,7 +4,8 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { AdminBarraMovil } from "@/components/AdminBarraMovil";
 import { AdminSidebar } from "@/components/AdminSidebar";
-import { Mark } from "@/components/Mark";
+import { BotonInstalar } from "@/components/Instalar";
+import { Mark, Wordmark } from "@/components/Mark";
 import { Avatar, Badge, Button, SegmentedControl, TextField, cx } from "@/components/ui";
 import { cotizar, type Cotizacion } from "@/lib/finanzas";
 import { cop, fechaHora, pct } from "@/lib/formato";
@@ -93,8 +94,9 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
       </div>
       {/* El admin navega y cierra sesión desde la barra lateral o el menú. */}
       {esAdmin ? null : (
-        <div className="relative flex items-center gap-3">
-          <Mark size={28} />
+        <div className="relative flex items-center gap-2.5">
+          <BotonInstalar />
+          <Wordmark height={22} />
           <button
             type="button"
             className="cursor-pointer rounded-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -117,6 +119,9 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
               <Link href="/contratos/nuevo" className="es-btn es-btn--primary es-btn--md" role="menuitem">
                 Nuevo contrato
               </Link>
+              <Link href="/contratos" className="es-btn es-btn--secondary es-btn--md" role="menuitem">
+                Mis contratos
+              </Link>
               <Button variant="secondary" onClick={cerrarSesion}>
                 Cerrar sesión
               </Button>
@@ -134,9 +139,7 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
         <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 pb-24 text-center">
           <Mark size={64} className="mb-4" />
           <div className="title-3">Aún no hay tasas activas</div>
-          <div className="callout text-ink-secondary">
-            Cuando administración active una tasa, podrás cotizar aquí.
-          </div>
+          <div className="callout text-ink-secondary">Cuando administración active una tasa, podrás cotizar aquí.</div>
         </div>
       </>,
     );
@@ -339,9 +342,7 @@ function Calculadora({ usuario, datos }: { usuario: Usuario; datos: Datos }) {
                 icon="chat"
                 label="Enviar por WhatsApp"
                 disabled={!precio}
-                onClick={() =>
-                  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener")
-                }
+                onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener")}
               />
               <Button size="lg" pill className="flex-1" disabled={!precio} onClick={compartir}>
                 Compartir cotización

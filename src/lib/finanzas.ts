@@ -32,10 +32,7 @@ export function cotizar(p: {
   const financia = p.precio * (1 - p.inicial / 100);
   let cuota = 0;
   if (financia > 0 && p.plazo > 0) {
-    cuota =
-      mensual > 0
-        ? (financia * mensual) / (1 - Math.pow(1 + mensual, -p.plazo))
-        : financia / p.plazo;
+    cuota = mensual > 0 ? (financia * mensual) / (1 - Math.pow(1 + mensual, -p.plazo)) : financia / p.plazo;
   }
   return {
     mensual,

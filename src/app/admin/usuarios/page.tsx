@@ -89,8 +89,10 @@ export default function UsuariosPage() {
         if (!actual && !clave) errores.clave = "Escribe la contraseña con la que va a ingresar.";
         else if (clave && clave.length < 8) errores.clave = "Escribe al menos 8 caracteres.";
         if (actual && actual.id === yo?.id) {
-          if (v.rol !== "admin") errores.rol = "No puedes quitarte el rol de administrador; pídeselo a otro administrador.";
-          if (v.activo !== true) errores.activo = "No puedes desactivar tu propia cuenta; pídeselo a otro administrador.";
+          if (v.rol !== "admin")
+            errores.rol = "No puedes quitarte el rol de administrador; pídeselo a otro administrador.";
+          if (v.activo !== true)
+            errores.activo = "No puedes desactivar tu propia cuenta; pídeselo a otro administrador.";
         }
         return errores;
       }}

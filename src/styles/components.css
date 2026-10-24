@@ -154,6 +154,14 @@
 .es-side__count { font-size: 12px; line-height: 16px; color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .es-side__item--active .es-side__count { color: var(--accent-text); }
 .es-side__footer { margin-top: auto; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); }
+.es-side__wordmark { height: 28px; width: auto; display: block; }
+.es-side__install { margin: var(--space-4) var(--space-1) 0; margin-top: auto; padding: var(--space-3); border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--hairline); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: var(--space-2); }
+.es-side__install + .es-side__footer { margin-top: var(--space-2); }
+.es-side__install-head { display: flex; align-items: center; gap: var(--space-2); }
+.es-side__install-icon { width: 28px; height: 28px; border-radius: var(--radius-md); background: var(--surface-selected); color: var(--accent-text); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.es-side__install-title { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink); }
+.es-side__install-text { font-size: 12px; line-height: 16px; color: var(--ink-secondary); }
+.es-side__install-actions { display: flex; align-items: center; gap: var(--space-1); }
 .es-side__footer-name { font-size: 13px; line-height: 18px; font-weight: 600; }
 .es-side__footer-role { font-size: 12px; line-height: 16px; color: var(--ink-secondary); }
 

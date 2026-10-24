@@ -41,9 +41,7 @@ function refrescar(): Promise<void> {
   cargando ??= servidor
     .obtenerEstado()
     .then((r) =>
-      publicar(
-        r ? { listo: true, usuario: r.usuario, ...r.datos } : { listo: true, usuario: null, ...VACIO },
-      ),
+      publicar(r ? { listo: true, usuario: r.usuario, ...r.datos } : { listo: true, usuario: null, ...VACIO }),
     )
     // Sin conexión: se conserva lo que haya y se reintenta en el próximo refresco.
     .catch(() => publicar({ listo: true }))
@@ -86,11 +84,7 @@ export function useStore(): Estado {
 
 export const inicioDe = (rol: Rol) => (rol === "admin" ? "/admin/tasas" : "/calculadora");
 
-export async function iniciarSesion(
-  usuario: string,
-  clave: string,
-  recordar: boolean,
-): Promise<Usuario | null> {
+export async function iniciarSesion(usuario: string, clave: string, recordar: boolean): Promise<Usuario | null> {
   const r = await servidor.entrar(usuario, clave, recordar);
   if (!r) return null;
   publicar({ listo: true, usuario: r.usuario, ...r.datos });
@@ -142,18 +136,15 @@ async function escribir(pedido: Promise<Resultado>): Promise<string | undefined>
 }
 
 export const crearCategoria = (nombre: string) => escribir(servidor.crearCategoria(nombre));
-export const actualizarCategoria = (id: string, nombre: string) =>
-  escribir(servidor.actualizarCategoria(id, nombre));
+export const actualizarCategoria = (id: string, nombre: string) => escribir(servidor.actualizarCategoria(id, nombre));
 export const eliminarCategoria = (id: string) => escribir(servidor.eliminarCategoria(id));
 
-export const crearMarca = (categoriaId: string, nombre: string) =>
-  escribir(servidor.crearMarca(categoriaId, nombre));
+export const crearMarca = (categoriaId: string, nombre: string) => escribir(servidor.crearMarca(categoriaId, nombre));
 export const actualizarMarca = (id: string, nombre: string) => escribir(servidor.actualizarMarca(id, nombre));
 export const eliminarMarca = (id: string) => escribir(servidor.eliminarMarca(id));
 
 export const crearFinanciera = (nombre: string) => escribir(servidor.crearFinanciera(nombre));
-export const actualizarFinanciera = (id: string, nombre: string) =>
-  escribir(servidor.actualizarFinanciera(id, nombre));
+export const actualizarFinanciera = (id: string, nombre: string) => escribir(servidor.actualizarFinanciera(id, nombre));
 export const eliminarFinanciera = (id: string) => escribir(servidor.eliminarFinanciera(id));
 
 type ProductoEditable = Omit<Producto, "id" | "categoriaId">;
@@ -164,8 +155,7 @@ export const eliminarProducto = (id: string) => escribir(servidor.eliminarProduc
 
 export const crearTasa = (clave: Pick<Tasa, "marcaId" | "financieraId">, datos: TasaEditable) =>
   escribir(servidor.crearTasa(clave, datos));
-export const actualizarTasa = (id: string, datos: TasaEditable) =>
-  escribir(servidor.actualizarTasa(id, datos));
+export const actualizarTasa = (id: string, datos: TasaEditable) => escribir(servidor.actualizarTasa(id, datos));
 export const eliminarTasa = (id: string) => escribir(servidor.eliminarTasa(id));
 
 export const crearUsuario = (datos: UsuarioEditable) => escribir(servidor.crearUsuario(datos));

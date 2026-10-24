@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Button } from "./ui";
 
 interface ConfirmSheetProps {
@@ -13,6 +13,8 @@ interface ConfirmSheetProps {
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: () => void;
+  /** Campos adicionales, p. ej. el motivo de una anulación. */
+  children?: ReactNode;
 }
 
 export function ConfirmSheet(props: ConfirmSheetProps) {
@@ -30,6 +32,7 @@ export function ConfirmSheet(props: ConfirmSheetProps) {
         <h2 className="title-3 m-0">{props.title}</h2>
         <p className="callout m-0 text-ink-secondary">{props.description}</p>
       </div>
+      {props.children}
       <div className="mt-6 flex gap-3">
         <Button variant="secondary" className="flex-1" onClick={props.onCancel}>
           {props.cancelLabel}

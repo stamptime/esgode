@@ -3,7 +3,10 @@ import Link from "next/link";
 import { Icon } from "@/components/ui";
 
 /** Pantalla de celular del módulo de contratos: encabezado, contenido con scroll y acciones fijas abajo. */
-export function Marco({ mainRef, ...props }: {
+export function Marco({
+  mainRef,
+  ...props
+}: {
   /** Destino de la flecha de regreso; sin él no hay flecha. */
   volver?: string;
   volverLabel?: string;
@@ -13,6 +16,8 @@ export function Marco({ mainRef, ...props }: {
   lado?: ReactNode;
   /** Debajo del título, p. ej. la barra de pasos. */
   extra?: ReactNode;
+  /** Encima del título, p. ej. el logo. */
+  arriba?: ReactNode;
   /** Título grande (title-1) en vez de title-2. */
   grande?: boolean;
   pie?: ReactNode;
@@ -22,6 +27,7 @@ export function Marco({ mainRef, ...props }: {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col">
       <header className="flex flex-col gap-3 px-4 pt-13 pb-3">
+        {props.arriba}
         <div className="flex items-center gap-2">
           {props.volver ? (
             <Link
@@ -44,7 +50,8 @@ export function Marco({ mainRef, ...props }: {
         </div>
         {props.extra}
       </header>
-      <main ref={mainRef} className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-2 pb-8">
+      {/* Sin shrink-0, las tarjetas con overflow oculto (el visor del PDF) se encogen a 0 en la columna con scroll. */}
+      <main ref={mainRef} className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-2 pb-8 [&>*]:shrink-0">
         {props.children}
       </main>
       {props.pie ? (
@@ -68,7 +75,13 @@ export function Aviso({ titulo, texto, accion }: { titulo: string; texto?: strin
 /** Opción de radio en tarjeta con título y descripción. */
 export function Opcion(props: { on: boolean; titulo: string; texto: string; onClick: () => void }) {
   return (
-    <button type="button" className={props.on ? "opt opt--on" : "opt"} role="radio" aria-checked={props.on} onClick={props.onClick}>
+    <button
+      type="button"
+      className={props.on ? "opt opt--on" : "opt"}
+      role="radio"
+      aria-checked={props.on}
+      onClick={props.onClick}
+    >
       <span className="radio" aria-hidden="true">
         <i />
       </span>
@@ -84,7 +97,16 @@ export function Opcion(props: { on: boolean; titulo: string; texto: string; onCl
 export function Visto() {
   return (
     <span className="caja" aria-hidden="true">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M5 12l5 5L20 7" />
       </svg>
     </span>

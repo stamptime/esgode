@@ -86,25 +86,74 @@ async function setup() {
       creado_por text not null,
       unique (tipo, anio, numero))`,
   ]);
+  await migrar();
   console.log("Tablas listas.");
 
   const [{ n }] = await sql`select count(*)::int as n from categorias`;
   if (n > 0) return console.log("Ya hay datos; no se cargan los de ejemplo.");
   await sql.transaction([
     ...CATEGORIAS.map((c) => sql`insert into categorias (id, nombre) values (${c.id}, ${c.nombre})`),
-    ...MARCAS.map((m) => sql`insert into marcas (id, categoria_id, nombre) values (${m.id}, ${m.categoriaId}, ${m.nombre})`),
+    ...MARCAS.map(
+      (m) => sql`insert into marcas (id, categoria_id, nombre) values (${m.id}, ${m.categoriaId}, ${m.nombre})`,
+    ),
     ...FINANCIERAS.map((f) => sql`insert into financieras (id, nombre) values (${f.id}, ${f.nombre})`),
     ...PRODUCTOS.map(
       (p) => sql`insert into productos (id, categoria_id, marca_id, nombre, precio, activo)
         values (${p.id}, ${p.categoriaId}, ${p.marcaId}, ${p.nombre}, ${p.precio}, ${p.activo})`,
     ),
     ...TASAS_SEMILLA.map(
-      (t) => sql`insert into tasas (id, categoria_id, marca_id, financiera_id, tipo, tasa, plazos, inicial_min, activa, actualizado_por)
+      (
+        t,
+      ) => sql`insert into tasas (id, categoria_id, marca_id, financiera_id, tipo, tasa, plazos, inicial_min, activa, actualizado_por)
         values (${t.id}, ${t.categoriaId}, ${t.marcaId}, ${t.financieraId}, ${t.tipo}, ${t.tasa}, ${t.plazos}::int[],
           ${t.inicialMin}, ${t.activa}, ${t.actualizadoPor})`,
     ),
   ]);
   console.log("Datos de ejemplo cargados.");
+}
+
+// Cambios sobre tablas que ya existen. Cada migración corre una sola vez.
+const MIGRACIONES = {
+  "2026-10-contratos-borradores": [
+    sql`alter table contratos
+      add column if not exists acreedor text not null default 'esmer' check (acreedor in ('esmer', 'elex')),
+      add column if not exists periodo text not null default 'mensual' check (periodo in ('mensual', 'quincenal', 'semanal')),
+      add column if not exists precio bigint,
+      add column if not exists inicial bigint,
+      add column if not exists paso int not null default 1,
+      add column if not exists aprobado_en timestamptz,
+      add column if not exists aprobado_por text,
+      add column if not exists firma_lienzo text not null default '358 168',
+      add column if not exists fotos jsonb not null default '{}',
+      add column if not exists motivo_anulacion text,
+      add column if not exists editado_en timestamptz not null default now(),
+      add column if not exists editado_por text not null default '',
+      add column if not exists creado_por_id text`,
+    sql`alter table contratos alter column anio drop not null, alter column numero drop not null`,
+    sql`alter table contratos drop constraint if exists contratos_capital_check`,
+    sql`alter table contratos add constraint contratos_capital_check check (capital >= 0)`,
+    // Los contratos generados antes de los borradores ya tenían número: quedan aprobados (o firmados).
+    sql`update contratos set aprobado_en = creado_en, aprobado_por = creado_por, editado_en = creado_en, editado_por = creado_por
+      where aprobado_en is null and numero is not null`,
+    // Las copias cambian de nombre por posición: Cartera, Contabilidad, Archivo → Contabilidad, Tienda, Gerencia.
+    sql`update contratos set copias = jsonb_strip_nulls(jsonb_build_object(
+      'original', copias->'original', 'contabilidad', copias->'cartera', 'tienda', copias->'contabilidad', 'gerencia', copias->'archivo'))`,
+  ],
+  // Contratos que generó la versión anterior mientras se publicaba esta (tienen número pero no aprobación).
+  "2026-10-contratos-previos": [
+    sql`update contratos set aprobado_en = creado_en, aprobado_por = creado_por, editado_en = creado_en, editado_por = creado_por
+      where aprobado_en is null and numero is not null and editado_por = ''`,
+  ],
+};
+
+async function migrar() {
+  await sql`create table if not exists migraciones (nombre text primary key, en timestamptz not null default now())`;
+  const hechas = new Set((await sql`select nombre from migraciones`).map((f) => f.nombre));
+  for (const [nombre, pasos] of Object.entries(MIGRACIONES)) {
+    if (hechas.has(nombre)) continue;
+    await sql.transaction([...pasos, sql`insert into migraciones (nombre) values (${nombre})`]);
+    console.log(`Migración ${nombre} aplicada.`);
+  }
 }
 
 async function usuario() {

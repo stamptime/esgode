@@ -52,9 +52,7 @@ export default function FinancierasPage() {
         return actualizarFinanciera(actual.id, nombre);
       }}
       eliminar={(f) => eliminarFinanciera(f.id)}
-      avisoEliminar={(f) =>
-        arrastre([cuenta(de(f).length, "tasa", "tasas")], "No tiene tasas. No se puede deshacer.")
-      }
+      avisoEliminar={(f) => arrastre([cuenta(de(f).length, "tasa", "tasas")], "No tiene tasas. No se puede deshacer.")}
     />
   );
 }

@@ -3,12 +3,14 @@ import type { ContratoNuevo } from "./types";
 // Borrador del formulario de contratos en el navegador del asesor. En el
 // celular, al cambiar a WhatsApp para copiar datos, el navegador puede
 // descargar la página; al volver se recarga y se perdía lo escrito. Se guarda
-// por usuario, vence a las 12 horas y se borra al generar o al cerrar sesión.
+// por usuario, vence a las 12 horas y se borra al crear el borrador para
+// revisión o al cerrar sesión. Si ya existe en el servidor, guarda su id.
 
 export interface Borrador {
   paso: number;
   d: ContratoNuevo;
   jura: { tradicion: boolean; hurto: boolean; bloqueo: boolean };
+  borradorId?: string | null; // el borrador en el servidor, si ya se guardó
   guardado: number; // ms
 }
 

@@ -33,9 +33,7 @@ export default function ProductosPage() {
         {
           key: "activo",
           label: "Estado",
-          render: (p) => (
-            <Badge tone={p.activo ? "success" : "neutral"}>{p.activo ? "Activo" : "Inactivo"}</Badge>
-          ),
+          render: (p) => <Badge tone={p.activo ? "success" : "neutral"}>{p.activo ? "Activo" : "Inactivo"}</Badge>,
         },
       ]}
       tarjeta={(p) => ({
@@ -81,9 +79,7 @@ export default function ProductosPage() {
         const errores: Record<string, string> = {};
         const nombre = String(v.nombre);
         if (!nombre.trim()) errores.nombre = "Escribe el nombre del producto, por ejemplo Galaxy A55 256 GB.";
-        else if (
-          productos.some((p) => p.id !== actual?.id && p.marcaId === v.marcaId && igual(p.nombre, nombre))
-        )
+        else if (productos.some((p) => p.id !== actual?.id && p.marcaId === v.marcaId && igual(p.nombre, nombre)))
           errores.nombre = "Ese producto ya existe en la marca; escribe otro nombre.";
         if (!v.marcaId) errores.marcaId = "Elige la marca del producto.";
         if (!(Number(v.precio) > 0)) errores.precio = "Escribe el precio en pesos, por ejemplo $ 1.899.900.";

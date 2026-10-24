@@ -8,8 +8,7 @@ import { abrirSesion, cerrarSesion, usuarioActual } from "./sesion";
 
 // Todas las acciones son endpoints públicos: cada una verifica la sesión y el rol.
 
-export type Resultado =
-  { ok: true; datos: Datos; id?: string } | { ok: false; error: string; sinSesion?: boolean };
+export type Resultado = { ok: true; datos: Datos; id?: string } | { ok: false; error: string; sinSesion?: boolean };
 
 const SIN_SESION: Resultado = { ok: false, error: "Tu sesión terminó. Vuelve a ingresar.", sinSesion: true };
 
@@ -77,8 +76,7 @@ export async function salir() {
 async function comoAdmin(escribir: (admin: Usuario) => Promise<string | void>): Promise<Resultado> {
   const usuario = await usuarioActual();
   if (!usuario) return SIN_SESION;
-  if (usuario.rol !== "admin")
-    return { ok: false, error: "Solo administración puede cambiar la configuración." };
+  if (usuario.rol !== "admin") return { ok: false, error: "Solo administración puede cambiar la configuración." };
   try {
     const id = await escribir(usuario);
     return { ok: true, datos: await leerDatos(true), id: id ?? undefined };
@@ -247,7 +245,9 @@ export async function eliminarTasa(id: string) {
 /* ---------- Usuarios y roles ---------- */
 
 function usuarioValido(u: UsuarioEditable, claveObligatoria: boolean) {
-  const usuario = String(u.usuario ?? "").trim().toLowerCase();
+  const usuario = String(u.usuario ?? "")
+    .trim()
+    .toLowerCase();
   if (!/^[a-z0-9._-]{3,40}$/.test(usuario))
     throw new Invalido("Escribe el usuario en minúsculas, sin espacios ni tildes, por ejemplo nombre.apellido.");
   if (u.rol !== "admin" && u.rol !== "staff") throw new Invalido("Elige el rol del usuario.");
@@ -273,7 +273,9 @@ export async function actualizarUsuario(id: string, datos: UsuarioEditable) {
   return comoAdmin(async (admin) => {
     const u = usuarioValido(datos, false);
     if (id === admin.id && (u.rol !== "admin" || !u.activo))
-      throw new Invalido("No puedes quitarte el rol de administrador ni desactivar tu cuenta; pídeselo a otro administrador.");
+      throw new Invalido(
+        "No puedes quitarte el rol de administrador ni desactivar tu cuenta; pídeselo a otro administrador.",
+      );
     await sql`
       update usuarios set usuario = ${u.usuario}, nombre = ${u.nombre}, rol = ${u.rol}, activo = ${u.activo},
         clave_hash = coalesce(${u.clave ? hashClave(u.clave) : null}, clave_hash)
@@ -283,8 +285,7 @@ export async function actualizarUsuario(id: string, datos: UsuarioEditable) {
 
 export async function eliminarUsuario(id: string) {
   return comoAdmin(async (admin) => {
-    if (id === admin.id)
-      throw new Invalido("No puedes eliminar tu propia cuenta; pídeselo a otro administrador.");
+    if (id === admin.id) throw new Invalido("No puedes eliminar tu propia cuenta; pídeselo a otro administrador.");
     await sql`delete from usuarios where id = ${id}`;
   });
 }

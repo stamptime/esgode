@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Badge,
-  Button,
-  DataTable,
-  SegmentedControl,
-  StatCard,
-  TextField,
-  type DataColumn,
-} from "@/components/ui";
+import { Badge, Button, DataTable, SegmentedControl, StatCard, TextField, type DataColumn } from "@/components/ui";
 import { esHoy, fecha, hora, pct } from "@/lib/formato";
 import { nombreDe } from "@/lib/formato";
 import { useStore } from "@/lib/store";
@@ -82,10 +74,7 @@ export default function TasasPage() {
   const marcasCat = marcas.filter((m) => m.categoriaId === categoria.id);
   const hayLibres = enCategoria.length < marcasCat.length * financieras.length;
 
-  const ultima = tasas.reduce<Tasa | null>(
-    (max, t) => (!max || t.actualizadoEn > max.actualizadoEn ? t : max),
-    null,
-  );
+  const ultima = tasas.reduce<Tasa | null>((max, t) => (!max || t.actualizadoEn > max.actualizadoEn ? t : max), null);
   const porQuien = ultima?.actualizadoPor ? `, por ${ultima.actualizadoPor.split(" ")[0]}` : "";
 
   return (

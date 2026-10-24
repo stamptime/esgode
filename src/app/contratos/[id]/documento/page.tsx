@@ -15,7 +15,25 @@ import type { Contrato, Copia } from "@/lib/types";
 // El PDF sale de la impresión del navegador («Guardar como PDF»): las hojas
 // ya tienen el tamaño carta. ?copias=original,cartera elige las copias y
 // ?archivo=uno imprime todas juntas al abrir; con ?archivo=cada se guarda una
-// por una. Sin consulta, solo se ve el original.
+// por una. Sin consulta, solo se ve el original. Antes de imprimir se espera a
+// que carguen las fotos del anexo. El PDF del borrador no queda en el historial.
+
+/** Espera a que terminen de cargar las imágenes de las hojas (máximo 8 s). */
+function fotosCargadas(): Promise<void> {
+  const pendientes = [...document.querySelectorAll<HTMLImageElement>(".doc-paginas img")].filter(
+    (img) => !img.complete,
+  );
+  const todas = Promise.all(
+    pendientes.map(
+      (img) =>
+        new Promise((ok) => {
+          img.addEventListener("load", ok, { once: true });
+          img.addEventListener("error", ok, { once: true });
+        }),
+    ),
+  );
+  return Promise.race([todas.then(() => {}), new Promise<void>((ok) => setTimeout(ok, 8000))]);
+}
 
 export default function DocumentoPage() {
   const usuario = useRequerirRol(["staff", "admin"]);
@@ -55,17 +73,27 @@ function Hojas({ contrato: c, copias, modo }: { contrato: Contrato; copias: Copi
   useEffect(() => {
     if (!imprimiendo) return;
     const titulo = document.title;
-    document.title = `${codigoContrato(c)} ${imprimiendo.length === 1 ? copiaInfo(imprimiendo[0], c.tipo).nombre.split(" · ")[1] : "copias"}`;
-    pedir(registrarDescarga(c.id, imprimiendo)).catch((e: Error) =>
-      setFallo(`El PDF se generó, pero no quedó en el historial: ${e.message}`),
-    );
-    const t = setTimeout(() => {
+    const borrador = c.etapa === "borrador";
+    document.title = borrador
+      ? `Borrador ${c.cliente.nombre}`.trim()
+      : `${codigoContrato(c)} ${imprimiendo.length === 1 ? copiaInfo(imprimiendo[0], c.tipo).nombre.split(" · ")[1] : "copias"}`;
+    if (!borrador)
+      pedir(registrarDescarga(c.id, imprimiendo)).catch((e: Error) =>
+        setFallo(`El PDF se generó, pero no quedó en el historial: ${e.message}`),
+      );
+    let vigente = true;
+    const t = setTimeout(async () => {
+      await fotosCargadas();
+      if (!vigente) return;
       window.print();
       document.title = titulo;
       setGuardadas((g) => [...new Set([...g, ...imprimiendo])]);
       setImprimiendo(null);
     }, 300);
-    return () => clearTimeout(t);
+    return () => {
+      vigente = false;
+      clearTimeout(t);
+    };
   }, [imprimiendo, c]);
 
   useEffect(() => {
@@ -90,7 +118,9 @@ function Hojas({ contrato: c, copias, modo }: { contrato: Contrato; copias: Copi
         </Link>
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="headline truncate">
-            {c.tipo === "compraventa" ? "Compraventa" : "Acuerdo de pago"} {numeroContrato(c)}
+            {c.etapa === "borrador" ? "Borrador · " : ""}
+            {c.tipo === "compraventa" ? "Compraventa" : "Acuerdo de pago"}{" "}
+            {c.etapa === "borrador" ? "" : numeroContrato(c)}
           </div>
           <div className="callout text-ink-secondary">
             {modo === "ver"
@@ -100,7 +130,7 @@ function Hojas({ contrato: c, copias, modo }: { contrato: Contrato; copias: Copi
         </div>
         {modo === "ver" ? (
           <Link href={`/contratos/${c.id}`} className="es-btn es-btn--primary es-btn--md">
-            Descargar PDF
+            {c.etapa === "borrador" ? "Volver a la revisión" : "Descargar PDF"}
           </Link>
         ) : modo === "uno" ? (
           <Button onClick={() => setImprimiendo(copias)}>Guardar PDF</Button>
@@ -108,7 +138,13 @@ function Hojas({ contrato: c, copias, modo }: { contrato: Contrato; copias: Copi
         {modo === "cada" ? (
           <div className="flex w-full flex-wrap gap-2">
             {copias.map((k) => (
-              <Button key={k} variant={guardadas.includes(k) ? "secondary" : "tinted"} size="sm" icon={guardadas.includes(k) ? "check" : undefined} onClick={() => setImprimiendo([k])}>
+              <Button
+                key={k}
+                variant={guardadas.includes(k) ? "secondary" : "tinted"}
+                size="sm"
+                icon={guardadas.includes(k) ? "check" : undefined}
+                onClick={() => setImprimiendo([k])}
+              >
                 {copiaInfo(k, c.tipo).nombre}
               </Button>
             ))}

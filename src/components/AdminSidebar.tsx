@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Mark } from "./Mark";
+import { TarjetaInstalar } from "./Instalar";
+import { Wordmark } from "./Mark";
 import { Button, SidebarNav, cx, type SidebarItem } from "./ui";
 import { cerrarSesion } from "@/lib/store";
 import type { Usuario } from "@/lib/types";
@@ -59,8 +60,8 @@ export function AdminSidebar({
         onNavegar?.();
         router.push(RUTAS[id]);
       }}
-      brand="esgode"
-      logo={<Mark size={24} />}
+      logo={<Wordmark height={28} />}
+      install={<TarjetaInstalar />}
       user={{ name: usuario.nombre, role: "Administrador" }}
       userAction={
         <Button variant="plain" size="sm" onClick={cerrarSesion}>

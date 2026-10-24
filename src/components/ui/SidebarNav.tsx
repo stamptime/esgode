@@ -4,8 +4,7 @@ import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 
 export type SidebarItem =
-  | { id: string; label: string; icon?: IconName; count?: number; disabled?: boolean }
-  | { section: string };
+  { id: string; label: string; icon?: IconName; count?: number; disabled?: boolean } | { section: string };
 
 export interface SidebarNavProps {
   /** Ítems en orden; las entradas `{section}` son encabezados. */
@@ -13,9 +12,11 @@ export interface SidebarNavProps {
   activeId?: string;
   onSelect?: (id: string) => void;
   brand?: string;
-  /** Marca de Esgode a 24px antes del wordmark: URL o nodo. */
+  /** Logo de Esgode (el wordmark a 28px): URL o nodo. */
   logo?: string | ReactNode;
   user?: { name: string; role?: string; src?: string };
+  /** Tarjeta encima del operador, p. ej. «Instala Esgode». */
+  install?: ReactNode;
   /** Acción junto al operador, p. ej. cerrar sesión. */
   userAction?: ReactNode;
   label?: string;
@@ -28,11 +29,11 @@ export function SidebarNav(props: SidebarNavProps) {
       <div className="es-side__brand">
         {typeof props.logo === "string" ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="es-side__logo" src={props.logo} alt="" />
+          <img className="es-side__wordmark" src={props.logo} alt="esgode" />
         ) : (
           props.logo
         )}
-        {props.brand ?? "Esgode"}
+        {props.brand}
       </div>
       {props.items.map((it, i) => {
         if ("section" in it) {
@@ -59,6 +60,7 @@ export function SidebarNav(props: SidebarNavProps) {
           </button>
         );
       })}
+      {props.install}
       {props.user ? (
         <div className="es-side__footer">
           <Avatar name={props.user.name} src={props.user.src} size="md" />

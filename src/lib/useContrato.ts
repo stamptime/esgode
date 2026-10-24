@@ -34,6 +34,14 @@ export function useContrato(id: string) {
     };
   }, [id]);
 
+  /** Vuelve a leer el contrato sin mostrar errores (p. ej. para ver si ya lo aprobaron). */
+  const recargar = useCallback(() => {
+    pedir(obtenerContrato(id)).then(
+      (r) => setContrato(r.contrato),
+      () => {},
+    );
+  }, [id]);
+
   const actuar = useCallback(async (accion: Promise<RespuestaContrato>): Promise<boolean> => {
     setOcupado(true);
     setError("");
@@ -48,5 +56,5 @@ export function useContrato(id: string) {
     }
   }, []);
 
-  return { contrato, error, ocupado, actuar };
+  return { contrato, setContrato, error, setError, ocupado, actuar, recargar };
 }

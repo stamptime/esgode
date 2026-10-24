@@ -42,8 +42,8 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[390px] flex-col px-6 pt-[72px] pb-8">
       <div className="mb-10 flex flex-col gap-2">
-        <div className="mb-6">
-          <Lockup />
+        <div className="mb-8">
+          <Lockup width={200} />
         </div>
         <h1 className="title-1 m-0">Ingresa a tu cuenta</h1>
         <p className="body m-0 text-ink-secondary">Usa el usuario que te asignó administración.</p>
